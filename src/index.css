@@ -1,0 +1,34 @@
+
+.font{
+    background-color: white;
+    height: 35%;
+    border-radius: 10px;
+    display: flexbox;
+    width: 70%;
+    margin-left: 85px;
+    
+}
+.titulo{
+    text-align: center;
+    padding-top: 1%;
+}
+
+
+.boton{
+    margin-left: 350px;
+    margin-bottom: 25px;
+    margin-top: 5px;
+   }
+.mensaje{
+   display: flex;
+   margin-left: 20px;
+    border-radius:5px;
+    
+}
+.datedonation{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+.tabla-container{
+    background-color: aliceblue;
+}
