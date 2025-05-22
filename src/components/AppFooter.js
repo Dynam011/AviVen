@@ -9,7 +9,7 @@ const AppFooter = () => {
       </div>
       <div className="ms-auto">
         
-      <span>Liceo Libertador - Panel de administrativo</span>
+      <span>Granja AviVen - Panel de administrativo</span>
       </div>
     </CFooter>
   )

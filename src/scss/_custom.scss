@@ -1,0 +1,104 @@
+// _custom-variables.scss
+
+
+// Sobrescribe los colores principales de CoreUI
+$primary:   #4CAF50;
+$secondary: #FFEB3B;
+$success:   #81C784;
+$info:      #FFF176;
+$warning:   #FFD600;
+$danger:    #388E3C;
+$light:     #F9FBE7;
+$dark:      #263238;
+
+// Define variables para usar en el tema
+$body-bg:      #F1F8E9;
+$body-color:   #263238;
+$footer-bg:    #C5E1A5;
+
+// Sidebar y header (Asegúrate de que CoreUI use estas variables para el sidebar/header)
+$sidebar-bg:           #E8F5E9;
+$sidebar-color:        #263238;
+$sidebar-header-bg:    #4CAF50;
+$sidebar-footer-bg:    #C5E1A5;
+$header-bg:            #4CAF50;
+$header-color:         #fff;
+
+// SimpleBar
+$simplebar-bg:         #E8F5E9;
+$simplebar-thumb-bg:   #C5E1A5;
+$simplebar-thumb-hover-bg: #81C784;
+
+// Sobrescribe las variables CSS de CoreUI usando las variables SCSS
+:root {
+  --cui-primary: #{$primary} !important;
+  --cui-secondary: #{$secondary} !important;
+  --cui-success: #{$success} !important;
+  --cui-info: #{$info} !important;
+  --cui-warning: #{$warning} !important;
+  --cui-danger: #{$danger} !important;
+  --cui-light: #{$light} !important;
+  --cui-dark: #{$dark} !important;
+}
+
+
+// Variables CSS para personalizaciones dinámicas
+:root {
+  --cui-primary: #4CAF50 !important;
+  --cui-secondary: #FFEB3B !important;
+  --cui-success: #81C784 !important;
+  --cui-info: #FFF176 !important;
+  --cui-warning: #FFD600 !important;
+  --cui-danger: #388E3C !important;
+  --cui-light: #F9FBE7 !important;
+  --cui-dark: #263238 !important;
+  --cui-body-bg: #F1F8E9 !important;
+  --cui-body-color: #263238 !important;
+  --cui-footer-bg: #C5E1A5 !important;
+  --cui-sidebar-bg: #E8F5E9 !important;
+  --cui-sidebar-color: #263238 !important;
+  --cui-sidebar-header-bg: #388E3C !important;
+  --cui-sidebar-footer-bg: #388E3C !important;
+  --cui-header-bg: #388E3C !important;
+  --cui-header-color: #fff !important;
+  --cui-simplebar-bg: #E8F5E9 !important;
+  --cui-simplebar-thumb-bg: #C5E1A5 !important;
+  --cui-simplebar-thumb-hover-bg: #388E3C !important;
+}
+
+// Modo oscuro usando el atributo de CoreUI
+[data-coreui-theme="dark"] {
+  --cui-body-bg: #263238 !important;
+  --cui-body-color: #F9FBE7 !important;
+  --cui-footer-bg: #388E3C !important;
+  --cui-primary: #81C784 !important;
+  --cui-secondary: #FFD600 !important;
+  --cui-sidebar-bg: #388E3C !important;
+  --cui-sidebar-body-bg: #388E3C !important;
+  --cui-sidebar-color: #F9FBE7 !important;
+  --cui-sidebar-header-bg: #2d6430 !important;
+  --cui-sidebar-footer-bg: #388E3C !important;
+  --cui-header-bg: #388E3C !important;
+  --cui-header-color: #F9FBE7 !important;
+  --cui-simplebar-bg: #2d6430 !important;
+  --cui-simplebar-thumb-bg: #388E3C !important;
+  --cui-simplebar-thumb-hover-bg: #81C784 !important;
+}
+
+.simplebar-content{
+  background: #0e492b   !important;
+  color: var(--cui-sidebar-color) !important;
+
+}
+.sidebar-nav .nav-link.active{
+  background: #388E3C !important;
+  color: var(--cui-sidebar-color) !important;
+}
+.sidebar-nav .nav-link:hover{
+  background: #388E3C !important;
+  color: var(--cui-sidebar-color) !important;
+}
+.sidebar-dark{
+  background: #024b2c !important;
+  color: var(--cui-sidebar-color) !important;
+}

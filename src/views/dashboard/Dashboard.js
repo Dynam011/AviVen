@@ -1,6 +1,4 @@
 import React from 'react'
-import classNames from 'classnames'
-
 import {
   CAvatar,
   CButton,
@@ -20,139 +18,234 @@ import {
   CTableRow,
   CWidgetStatsA,
   CWidgetStatsB,
+  CBadge,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import Pag404 from '../pages/page404/Page404';
-import { cilUser, cilUserFemale, cilChartPie, cilSchool, cilCheckCircle, cilXCircle, cilStar } from '@coreui/icons'
-import MainChart from './MainChart'
+import {
+  cilLeaf,
+  cilBasket,
+  cilGroup,
+  cilBarChart,
+  cilChartPie,
+  cilTruck,
+  cilMedicalCross,
+  cilWarning,
+  cilStorage,
+  cilBell,
+} from '@coreui/icons'
 
-const Dashboard = (user) => {
-  if (user.permission != 'admin.dashboard') return <Pag404 />
+const Dashboard = () => {
+  // Datos simulados para la granja avícola
   const stats = {
-    totalStudents: 1200,
-    approved: 950,
-    failed: 250,
-    enrolled: 1200,
-    attendance: 85, // Porcentaje de asistencia
+    totalHens: 12500,
+    dailyEggs: 11800,
+    feedStock: 3200, // kg
+    avgConversion: 92, // %
+    alerts: 2,
   }
 
-  const studentTable = [
+  const productionTable = [
     {
-      name: 'Juan Pérez',
-      year: '1° Año',
-      status: 'Aprobado',
-      average: 18,
-      attendance: '95%',
+      date: '2025-05-20',
+      eggs: 11800,
+      feed: 1200,
+      mortality: 3,
+      notes: 'Producción estable',
     },
     {
-      name: 'María López',
-      year: '2° Año',
-      status: 'Reprobado',
-      average: 9,
-      attendance: '80%',
+      date: '2025-05-19',
+      eggs: 11750,
+      feed: 1190,
+      mortality: 2,
+      notes: 'Sin novedades',
     },
     {
-      name: 'Carlos García',
-      year: '3° Año',
-      status: 'Aprobado',
-      average: 19,
-      attendance: '100%',
+      date: '2025-05-18',
+      eggs: 11780,
+      feed: 1210,
+      mortality: 4,
+      notes: 'Revisión de temperatura',
     },
   ]
 
-  const bestMetrics = {
-    bestYear: '3° Año',
-    bestAverage: 19,
-    bestStudent: {
-      name: 'Carlos García',
-      year: '3° Año',
-      average: 19,
-    },
-    yearAverages: [
-      { year: '1° Año', average: 15 },
-      { year: '2° Año', average: 16 },
-      { year: '3° Año', average: 19 },
-      { year: '4° Año', average: 18 },
-      { year: '5° Año', average: 17 },
-    ],
-  }
+  const inventory = [
+    { item: 'Alimento balanceado', stock: 3200, unit: 'kg', status: 'Suficiente' },
+    { item: 'Vacunas', stock: 120, unit: 'dosis', status: 'Bajo' },
+    { item: 'Cajas para huevos', stock: 400, unit: 'unidades', status: 'Suficiente' },
+    { item: 'Desinfectante', stock: 15, unit: 'litros', status: 'Crítico' },
+  ]
+
+  const staff = [
+    { name: 'Ana Torres', role: 'Veterinaria', shift: 'Mañana', status: 'Activo' },
+    { name: 'Luis Pérez', role: 'Supervisor', shift: 'Tarde', status: 'Activo' },
+    { name: 'Carlos Díaz', role: 'Operario', shift: 'Noche', status: 'Ausente' },
+  ]
 
   return (
     <>
       {/* Widgets de estadísticas generales */}
-      <CRow className="mb-4">
-        <CCol sm={6} lg={3}>
+      <CRow className="mb-4 g-3">
+        <CCol xs={12} sm={6} lg={3}>
           <CWidgetStatsA
-            className="mb-4"
-            color="primary"
-            value={stats.totalStudents}
-            title="Total Estudiantes"
-            chart={<CIcon icon={cilSchool} size="xl" />}
-          />
-        </CCol>
-        <CCol sm={6} lg={3}>
-          <CWidgetStatsA
-            className="mb-4"
+            className="mb-4 h-100"
             color="success"
-            value={stats.approved}
-            title="Estudiantes Aprobados"
-            chart={<CIcon icon={cilCheckCircle} size="xl" />}
+            value={stats.totalHens}
+            title="Gallinas en Producción"
+            style={{ background: 'linear-gradient(135deg,rgb(77, 189, 114) 0%,rgb(41, 158, 137) 100%)', color: '#222' }}
+            chart={
+              <div className="d-flex justify-content-center align-items-center" style={{ height: 48 }}>
+                <CIcon icon={cilLeaf} size="xl" style={{ color: '#1b8a5a', maxWidth: 40, maxHeight: 40 }} />
+              </div>
+            }
           />
         </CCol>
-        <CCol sm={6} lg={3}>
+        <CCol xs={12} sm={6} lg={3}>
           <CWidgetStatsA
-            className="mb-4"
-            color="danger"
-            value={stats.failed}
-            title="Estudiantes Reprobados"
-            chart={<CIcon icon={cilXCircle} size="xl" />}
+            className="mb-4 h-100"
+            color="warning"
+            value={stats.dailyEggs}
+            title="Huevos Diarios"
+            style={{ background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)', color: '#222' }}
+            chart={
+              <div className="d-flex justify-content-center align-items-center" style={{ height: 48 }}>
+                <CIcon icon={cilBasket} size="xl" style={{ color: '#b8860b', maxWidth: 40, maxHeight: 40 }} />
+              </div>
+            }
           />
         </CCol>
-        <CCol sm={6} lg={3}>
+        <CCol xs={12} sm={6} lg={3}>
           <CWidgetStatsA
-            className="mb-4"
+            className="mb-4 h-100"
             color="info"
-            value={`${stats.attendance}%`}
-            title="Asistencia Promedio"
-            chart={<CIcon icon={cilChartPie} size="xl" />}
+            value={`${stats.avgConversion}%`}
+            title="Eficiencia de Conversión"
+            style={{ background: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)', color: '#fff' }}
+            chart={
+              <div className="d-flex justify-content-center align-items-center" style={{ height: 48 }}>
+                <CIcon icon={cilBarChart} size="xl" style={{ color: '#fff', maxWidth: 40, maxHeight: 40 }} />
+              </div>
+            }
+          />
+        </CCol>
+        <CCol xs={12} sm={6} lg={3}>
+          <CWidgetStatsA
+            className="mb-4 h-100"
+            color="primary"
+            value={`${stats.feedStock} kg`}
+            title="Stock de Alimento"
+            style={{ background: 'linear-gradient(135deg, #36d1c4 0%, #5b86e5 100%)', color: '#fff' }}
+            chart={
+              <div className="d-flex justify-content-center align-items-center" style={{ height: 48 }}>
+                <CIcon icon={cilStorage} size="xl" style={{ color: '#fff', maxWidth: 40, maxHeight: 40 }} />
+              </div>
+            }
           />
         </CCol>
       </CRow>
 
-      {/* Gráfico principal */}
+      {/* Tabla de producción diaria */}
       <CCard className="mb-4">
         <CCardHeader>
-          <h4>Distribución de Calificaciones</h4>
+          <h4>Producción Reciente</h4>
         </CCardHeader>
         <CCardBody>
-          <MainChart />
+          <CTable align="middle" className="mb-0 border" hover responsive>
+            <CTableHead>
+              <CTableRow>
+                <CTableHeaderCell>Fecha</CTableHeaderCell>
+                <CTableHeaderCell>Huevos Producidos</CTableHeaderCell>
+                <CTableHeaderCell>Alimento Consumido (kg)</CTableHeaderCell>
+                <CTableHeaderCell>Mortalidad</CTableHeaderCell>
+                <CTableHeaderCell>Notas</CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              {productionTable.map((prod, index) => (
+                <CTableRow key={index}>
+                  <CTableDataCell>{prod.date}</CTableDataCell>
+                  <CTableDataCell>{prod.eggs}</CTableDataCell>
+                  <CTableDataCell>{prod.feed}</CTableDataCell>
+                  <CTableDataCell>
+                    {prod.mortality}
+                    {prod.mortality > 3 && (
+                      <CBadge color="danger" className="ms-2">
+                        Alto
+                      </CBadge>
+                    )}
+                  </CTableDataCell>
+                  <CTableDataCell>{prod.notes}</CTableDataCell>
+                </CTableRow>
+              ))}
+            </CTableBody>
+          </CTable>
         </CCardBody>
       </CCard>
 
-      {/* Tabla de estudiantes */}
+      {/* Inventario y suministros */}
       <CCard className="mb-4">
         <CCardHeader>
-          <h4>Detalles de Estudiantes</h4>
+          <h4>Inventario y Suministros</h4>
+        </CCardHeader>
+        <CCardBody>
+          <CTable align="middle" className="mb-0 border" hover responsive>
+            <CTableHead>
+              <CTableRow>
+                <CTableHeaderCell>Ítem</CTableHeaderCell>
+                <CTableHeaderCell>Stock</CTableHeaderCell>
+                <CTableHeaderCell>Estado</CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              {inventory.map((inv, index) => (
+                <CTableRow key={index}>
+                  <CTableDataCell>{inv.item}</CTableDataCell>
+                  <CTableDataCell>
+                    {inv.stock} {inv.unit}
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    <CBadge color={
+                      inv.status === 'Suficiente'
+                        ? 'success'
+                        : inv.status === 'Bajo'
+                        ? 'warning'
+                        : 'danger'
+                    }>
+                      {inv.status}
+                    </CBadge>
+                  </CTableDataCell>
+                </CTableRow>
+              ))}
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
+
+      {/* Personal y turnos */}
+      <CCard className="mb-4">
+        <CCardHeader>
+          <h4>Personal y Turnos</h4>
         </CCardHeader>
         <CCardBody>
           <CTable align="middle" className="mb-0 border" hover responsive>
             <CTableHead>
               <CTableRow>
                 <CTableHeaderCell>Nombre</CTableHeaderCell>
-                <CTableHeaderCell>Año</CTableHeaderCell>
+                <CTableHeaderCell>Rol</CTableHeaderCell>
+                <CTableHeaderCell>Turno</CTableHeaderCell>
                 <CTableHeaderCell>Estado</CTableHeaderCell>
-                <CTableHeaderCell>Promedio</CTableHeaderCell>
-                <CTableHeaderCell>Asistencia</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {studentTable.map((student, index) => (
+              {staff.map((person, index) => (
                 <CTableRow key={index}>
-                  <CTableDataCell>{student.name}</CTableDataCell>
-                  <CTableDataCell>{student.year}</CTableDataCell>
-                  <CTableDataCell>{student.status}</CTableDataCell>
-                  <CTableDataCell>{student.average}</CTableDataCell>
-                  <CTableDataCell>{student.attendance}</CTableDataCell>
+                  <CTableDataCell>{person.name}</CTableDataCell>
+                  <CTableDataCell>{person.role}</CTableDataCell>
+                  <CTableDataCell>{person.shift}</CTableDataCell>
+                  <CTableDataCell>
+                    <CBadge color={person.status === 'Activo' ? 'success' : 'danger'}>
+                      {person.status}
+                    </CBadge>
+                  </CTableDataCell>
                 </CTableRow>
               ))}
             </CTableBody>
@@ -160,58 +253,33 @@ const Dashboard = (user) => {
         </CCardBody>
       </CCard>
 
-      {/* Apartado de métricas interesantes */}
+      {/* Alertas y notificaciones */}
       <CCard className="mb-4">
         <CCardHeader>
-          <h4>Métricas Destacadas</h4>
+          <h4>
+            <CIcon icon={cilBell} className="me-2 text-danger" />
+            Alertas y Notificaciones
+          </h4>
         </CCardHeader>
         <CCardBody>
-          <CRow>
-            <CCol sm={6} lg={4}>
-              <CWidgetStatsB
-                className="mb-4"
-                color="success"
-                value={bestMetrics.bestYear}
-                title="Año con Mejor Promedio"
-                progress={{ value: 19 }}
-              />
-            </CCol>
-            <CCol sm={6} lg={4}>
-              <CWidgetStatsB
-                className="mb-4"
-                color="warning"
-                value={bestMetrics.bestStudent.name}
-                title="Mejor Estudiante"
-                progress={{ value: bestMetrics.bestStudent.average }}
-              />
-            </CCol>
-            <CCol sm={6} lg={4}>
-              <CWidgetStatsB
-                className="mb-4"
-                color="info"
-                value={`${bestMetrics.bestAverage}`}
-                title="Mejor Promedio General"
-                progress={{ value: bestMetrics.bestAverage }}
-              />
-            </CCol>
-          </CRow>
-          <h5>Promedios por Año</h5>
-          <CTable align="middle" className="mb-0 border" hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Año</CTableHeaderCell>
-                <CTableHeaderCell>Promedio</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {bestMetrics.yearAverages.map((yearData, index) => (
-                <CTableRow key={index}>
-                  <CTableDataCell>{yearData.year}</CTableDataCell>
-                  <CTableDataCell>{yearData.average}</CTableDataCell>
-                </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
+          {stats.alerts > 0 ? (
+            <ul>
+              <li>
+                <CBadge color="danger" className="me-2">
+                  Crítico
+                </CBadge>
+                Stock de desinfectante bajo. <strong>¡Reponer urgente!</strong>
+              </li>
+              <li>
+                <CBadge color="warning" className="me-2">
+                  Advertencia
+                </CBadge>
+                Vacunas en nivel bajo. Programar compra.
+              </li>
+            </ul>
+          ) : (
+            <span className="text-success">Sin alertas activas.</span>
+          )}
         </CCardBody>
       </CCard>
     </>

@@ -1,8 +1,16 @@
-@use "@coreui/coreui/scss/coreui" as * with ( 
+
+@use "@coreui/coreui/scss/coreui" as * with (
   $enable-deprecation-messages: false,
 );
+
 @use "@coreui/chartjs/scss/coreui-chartjs";
 @use "vendors/simplebar";
+@use "custom"; // Aquí se importa tu configuración Sass
+
+.simplebar-content{
+  background-color: blueviolet;
+}
+
 
 
 .wrapper {
@@ -54,15 +62,69 @@
 }
 
 
-.footer {
-  min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
 
-  
+
+// Estilos para SimpleBar
+.simplebar-scrollbar:before {
+  background: var(--cui-simplebar-thumb-bg) !important;
+  transition: background 0.2s;
+}
+.simplebar-scrollbar:hover:before {
+  background: var(--cui-simplebar-thumb-hover-bg) !important;
+}
+.simplebar-track.simplebar-vertical {
+  background: var(--cui-simplebar-bg);
+  border-radius: 8px;
+}
+.simplebar-content {
+  background: transparent;
 }
 
-@include color-mode(dark) {
-
-  .footer {
-    --cui-footer-bg: var(--cui-body-bg);
+// Sidebar, header, footer, cajas, textos, iconos
+.sidebar {
+  background: var(--cui-sidebar-bg);
+  color: var(--cui-sidebar-color);
+}
+.sidebar-header {
+  background: var(--cui-sidebar-header-bg);
+  color: var(--cui-header-color);
+}
+.sidebar-footer {
+  background: var(--cui-sidebar-footer-bg);
+  color: var(--cui-sidebar-color);
+}
+.header {
+  background: var(--cui-header-bg);
+  color: var(--cui-header-color);
+}
+.footer {
+  background: var(--cui-footer-bg);
+  color: var(--cui-body-color);
+}
+.card, .c-card, .c-widget {
+  background: var(--cui-light);
+  color: var(--cui-dark);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px #c5e1a533;
+}
+a, .nav-link, .btn {
+  color: var(--cui-primary);
+  &:hover {
+    color: var(--cui-success);
   }
 }
+.p, p, .text, .c-text {
+  color: var(--cui-dark);
+}
+svg, .icon, .c-icon {
+  color: var(--cui-primary);
+}
+.badge-primary, .badge-success, .badge-warning, .badge-danger {
+  color: #fff;
+}
+.badge-primary { background: var(--cui-primary); }
+.badge-success { background: var(--cui-success); }
+.badge-warning { background: var(--cui-warning); }
+.badge-danger  { background: var(--cui-danger); }
+
+// ...otros estilos personalizados...

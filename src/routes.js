@@ -1,18 +1,23 @@
+import { exact } from 'prop-types'
 import React from 'react'
 
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Docents = React.lazy(() => import('./views/pages/school/docents'))
-const Estudiantes = React.lazy(() => import('./views/pages/school/estudiantes'))
-
-
+const Inicio = React.lazy(() => import('./views/pages/inicio'))
+const Genealogia = React.lazy(() => import('./views/pages/genealogia/genealogia'))
+const Reproductores = React.lazy(() => import('./views/pages/genealogia/reproductores'))
+const Galpones = React.lazy(() => import('./views/pages/galpones/galpones'))
+const Inventario = React.lazy(() => import('./views/pages/inventario/inventario'))
+const Clientes = React.lazy(() => import('./views/pages/clientes/clientes'))
 
 const routes = [
-  { path: '/', exact: true, name: 'Inicio' },
+  { path: '/',  element: Inicio, name: 'Inicio' },
   { path: '/dashboard', name: 'Panel', element: Dashboard },
-  { path: '/docents', name: 'Docentes', element: Docents },
-  { path: '/students', name: 'Estudiantes', element: Estudiantes },
-
+ { path: '/genealogia', name: 'Genealogia', element: Genealogia },
+ { path: '/reproductores', name: 'Reproductores', element: Reproductores },
+ { path: '/galpones', name: 'Galpones', element: Galpones },
+ { path: '/inventario', name: 'Inventario', element: Inventario },
+ { path: '/clientes', name: 'Clientes', element: Clientes },
 
 ]
 
