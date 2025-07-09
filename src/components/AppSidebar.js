@@ -3,19 +3,15 @@ import { useSelector, useDispatch } from 'react-redux'
 
 import {
   CCloseButton,
-  CNav,
   CSidebar,
   CSidebarBrand,
   CSidebarFooter,
   CSidebarHeader,
   CSidebarToggler,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { CNavLink } from '@coreui/react'
 import { AppSidebarNav } from './AppSidebarNav'
 
-import { logo } from 'src/assets/brand/logo'
-import { sygnet } from 'src/assets/brand/sygnet'
+import logoImg from 'src/assets/images/logo.png'
 
 // sidebar nav config
 import navigation from '../_nav'
@@ -38,11 +34,7 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/" className="w-100 d-flex justify-content-center align-items-center">
-          <div className="logo">
-           <a href="/">
-            <img src="src/assets/images/logo.png" alt="Logo" width={80} />
-              </a>
-          </div>
+            <img src={logoImg} alt="Logo" width={80} />
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"

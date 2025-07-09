@@ -1,0 +1,617 @@
+{
+  "roles": [
+    {
+      "id_rol": 1,
+      "nombre": "Administrador",
+      "descripcion": "Gestiona todo el sistema",
+      "id": "6baa"
+    },
+    {
+      "id_rol": 2,
+      "nombre": "Supervisor",
+      "descripcion": "Supervisa procesos productivos",
+      "id": "be6f"
+    },
+    {
+      "id_rol": 3,
+      "nombre": "Empleado",
+      "descripcion": "Ejecuta tareas diarias",
+      "id": "caa8"
+    }
+  ],
+  "usuarios": [
+    {
+      "id_usuario": 1,
+      "nombre_usuario": "admin",
+      "nombre_completo": "Ana González",
+      "password": "admin123",
+      "id_rol": 1,
+      "id": "9d7e"
+    },
+    {
+      "id_usuario": 2,
+      "nombre_usuario": "super1",
+      "nombre_completo": "Carlos Pérez",
+      "password": "super123",
+      "id_rol": 2,
+      "id": "c306"
+    },
+    {
+      "id_usuario": 3,
+      "nombre_usuario": "emp1",
+      "nombre_completo": "Luis Torres",
+      "password": "emp123",
+      "id_rol": 3,
+      "id": "54bc"
+    },
+    {
+      "id": "47ca",
+      "id_usuario": 4,
+      "nombre_usuario": "a",
+      "nombre_completo": "a",
+      "password": "aaaaa",
+      "id_rol": 1
+    },
+    {
+      "id": "713c",
+      "id_usuario": 5,
+      "nombre_usuario": "aaaaa",
+      "nombre_completo": "aaaa",
+      "password": "aaaaa",
+      "id_rol": 1
+    }
+  ],
+  "galpones": [
+    {
+      "id_galpon": 1,
+      "nombre": "Galpón Norte",
+      "capacidad": 200,
+      "aves": 150,
+      "tipo_ventilacion": "Natural",
+      "tipo_iluminacion": "LED",
+      "id": "13e8"
+    },
+    {
+      "id_galpon": 2,
+      "nombre": "Galpón Sur",
+      "capacidad": 150,
+      "aves": 90,
+      "tipo_ventilacion": "Mecánica",
+      "tipo_iluminacion": "Fluorescente",
+      "id": "9776"
+    },
+    {
+      "id_galpon": 3,
+      "nombre": "Galpón Central",
+      "capacidad": 300,
+      "aves": 220,
+      "tipo_ventilacion": "Automatizada",
+      "tipo_iluminacion": "LED",
+      "id": "g301"
+    },
+    {
+      "id_galpon": 4,
+      "nombre": "Galpón Este",
+      "capacidad": 180,
+      "aves": 100,
+      "tipo_ventilacion": "Natural",
+      "tipo_iluminacion": "Incandescente",
+      "id": "g302"
+    },
+    {
+      "id_galpon": 5,
+      "nombre": "Galpón Oeste",
+      "capacidad": 220,
+      "aves": 180,
+      "tipo_ventilacion": "Mecánica",
+      "tipo_iluminacion": "LED",
+      "id": "g303"
+    }
+  ],
+  "lotes": [
+    {
+      "id_lote": 1,
+      "tipo": "Ponedoras",
+      "fecha_creacion": "2024-01-10",
+      "cantidad": 150,
+      "id_galpon": 1,
+      "id": "4e1b"
+    },
+    {
+      "id_lote": 2,
+      "tipo": "Engorde",
+      "fecha_creacion": "2024-02-12",
+      "cantidad": 100,
+      "id_galpon": 2,
+      "id": "0325"
+    }
+  ],
+  "produccion": [
+    {
+      "id_produccion": 1,
+      "id_lote": 1,
+      "fecha": "2024-03-01",
+      "tipo_producto": "huevo",
+      "cantidad": 130,
+      "observaciones": "Producción diaria normal",
+      "id": "f528"
+    },
+    {
+      "id_produccion": 2,
+      "id_lote": 1,
+      "fecha": "2024-03-02",
+      "tipo_producto": "huevo",
+      "cantidad": 128,
+      "observaciones": "Ligera disminución",
+      "id": "d7c7"
+    },
+    {
+      "id_produccion": 3,
+      "id_lote": 2,
+      "fecha": "2024-03-01",
+      "tipo_producto": "ave",
+      "cantidad": 95,
+      "observaciones": "Aves listas para engorde",
+      "id": "97dc"
+    },
+    {
+      "id_produccion": 4,
+      "id_lote": 2,
+      "fecha": "2024-03-02",
+      "tipo_producto": "ave",
+      "cantidad": 96,
+      "observaciones": "Incremento por lote nuevo",
+      "id": "c0aa"
+    },
+    {
+      "id_produccion": 5,
+      "id": "b537",
+      "fecha": "2025-06-11",
+      "id_lote": 2,
+      "tipo_producto": "huevo",
+      "cantidad": 233,
+      "observaciones": ""
+    },
+    {
+      "id_produccion": 6,
+      "id": "dc9f",
+      "fecha": "2025-06-25",
+      "id_lote": 1,
+      "tipo_producto": "huevo",
+      "cantidad": 100,
+      "observaciones": ""
+    },
+    {
+      "id_produccion": 7,
+      "id": "2a1d",
+      "fecha": "2025-06-25",
+      "id_lote": 1,
+      "tipo_producto": "huevo",
+      "cantidad": 100,
+      "observaciones": "ninguna"
+    },
+    {
+      "id_produccion": 8,
+      "id": "0fce",
+      "fecha": "2025-06-25",
+      "id_lote": 1,
+      "tipo_producto": "ave",
+      "cantidad": 150,
+      "observaciones": "ninguna"
+    },
+    {
+      "id": "543c",
+      "fecha": "2025-07-06",
+      "id_lote": 1,
+      "tipo_producto": "huevo",
+      "cantidad": 1000,
+      "observaciones": ""
+    }
+  ],
+  "genealogia": [
+    {
+      "id_genealogia": 1,
+      "id_padre": null,
+      "id_madre": null,
+      "observaciones": "Sin antecedentes",
+      "id": "d995"
+    }
+  ],
+  "reproductores": [
+    {
+      "id_reproductor": 1,
+      "codigo": "REP-001",
+      "fecha_nacimiento": "2023-05-10",
+      "sexo": "Macho",
+      "estado": "Activo",
+      "id_genealogia": 1,
+      "id": "3e92"
+    },
+    {
+      "id_reproductor": 2,
+      "codigo": "REP-002",
+      "fecha_nacimiento": "2023-05-12",
+      "sexo": "Hembra",
+      "estado": "Activo",
+      "id_genealogia": 1,
+      "id": "a99a"
+    }
+  ],
+  "gallos": [
+    {
+      "id": 1,
+      "cantidad": 12,
+      "fecha_ingreso": "2024-05-01",
+      "estado": "activo",
+      "galpon": "Galpón Norte",
+      "observaciones": "Gallos de reemplazo"
+    },
+    {
+      "id": 2,
+      "cantidad": 8,
+      "fecha_ingreso": "2024-05-10",
+      "estado": "activo",
+      "galpon": "Galpón Sur",
+      "observaciones": ""
+    }
+  ],
+  "incubadoras": [
+    {
+      "id_incubadora": 1,
+      "modelo": "Inc-Alpha",
+      "ubicacion": "Sala A",
+      "capacidad": 80.5,
+      "id": "e1f9"
+    }
+  ],
+  "sensores": [
+    {
+      "id_sensor": 1,
+      "id_incubadora": 1,
+      "tipo": "Temperatura",
+      "valor_min": 36,
+      "valor_max": 38,
+      "estado": "Operativo",
+      "id": "2a96"
+    },
+    {
+      "id_sensor": 2,
+      "id_incubadora": 1,
+      "tipo": "Humedad",
+      "valor_min": 50,
+      "valor_max": 60,
+      "estado": "Operativo",
+      "id": "9b2b"
+    }
+  ],
+  "incubaciones": [
+    {
+      "id_incubacion": 1,
+      "id_incubadora": 1,
+      "id_lote": 1,
+      "fecha_inicio": "2024-03-01",
+      "fecha_fin": "2024-03-21",
+      "estado": "Finalizada",
+      "id": "f783"
+    }
+  ],
+  "alimentadores": [
+    {
+      "id_alimentador": 1,
+      "id_galpon": 1,
+      "modelo": "Alim-1000",
+      "descripcion": "Automático",
+      "estado": "Operativo",
+      "id": "0bda"
+    }
+  ],
+  "consumo_alimento": [
+    {
+      "id_consumo": 1,
+      "id_lote": 1,
+      "id_alimentador": 1,
+      "fecha": "2024-03-02",
+      "cantidad": 15.2,
+      "id": "37f2"
+    }
+  ],
+  "bebederos": [
+    {
+      "id_bebedero": 1,
+      "id_galpon": 1,
+      "tipo_filtracion": "Carbón",
+      "estado": "Operativo",
+      "observaciones": "Sin novedad",
+      "id": "5451"
+    }
+  ],
+  "procesamientos": [
+    {
+      "id_proceso": 1,
+      "id_lote": 1,
+      "fecha": "2024-03-25",
+      "cantidad_aves": 140,
+      "cantidad_residuos": 10,
+      "estado": "Completado",
+      "id": "6ce8"
+    }
+  ],
+  "residuos": [
+    {
+      "id_residuo": 1,
+      "id_proceso": 1,
+      "tipo": "Pluma",
+      "cantidad": 7,
+      "metodo_disposicion": "Compostaje",
+      "id": "d143"
+    }
+  ],
+  "insumos": [
+    {
+      "id_insumo": 1,
+      "nombre": "Huevo blanco",
+      "tipo": "Producto",
+      "unidad": "docena",
+      "stock_actual": 320,
+      "id": "huevoblanco"
+    },
+    {
+      "id_insumo": 2,
+      "nombre": "Pollo vivo",
+      "tipo": "Producto",
+      "unidad": "unidad",
+      "stock_actual": 85,
+      "id": "pollovivo"
+    },
+    {
+      "id_insumo": 3,
+      "nombre": "Pollo eviscerado",
+      "tipo": "Producto",
+      "unidad": "kg",
+      "stock_actual": 120,
+      "id": "polloev"
+    },
+    {
+      "id_insumo": 4,
+      "nombre": "Gallinaza",
+      "tipo": "Subproducto",
+      "unidad": "kg",
+      "stock_actual": 60,
+      "id": "gallinaza"
+    },
+    {
+      "id_insumo": 5,
+      "nombre": "Pluma",
+      "tipo": "Subproducto",
+      "unidad": "kg",
+      "stock_actual": 15,
+      "id": "pluma"
+    },
+    {
+      "id_insumo": 6,
+      "nombre": "huevo",
+      "tipo": "Producto",
+      "unidad": "unidad",
+      "stock_actual": 100,
+      "id": "a0f1"
+    },
+    {
+      "id": "c33f",
+      "id_insumo": 7,
+      "nombre": "ave",
+      "tipo": "Producto",
+      "unidad": "unidad",
+      "stock_actual": 150
+    }
+  ],
+  "proveedores": [
+    {
+      "id_proveedor": 1,
+      "nombre": "AgroInsumos S.A.",
+      "tipo": "Alimentos",
+      "contacto": "Juan López",
+      "telefono": "+58 414-1234567",
+      "email": "juan@agroinsumos.com",
+      "direccion": "Calle 123",
+      "id_usuario": 1,
+      "id": "fe4e"
+    },
+    {
+      "id_proveedor": 2,
+      "nombre": "VetFarm",
+      "tipo": "Vacunas",
+      "contacto": "Dra. María Salas",
+      "telefono": "+58 424-9876543",
+      "email": "maria@vetfarm.com",
+      "direccion": "Av. Central 456",
+      "id_usuario": 2,
+      "id": "a1b2"
+    },
+    {
+      "id_proveedor": 3,
+      "nombre": "Equipos Avícolas C.A.",
+      "tipo": "Equipos",
+      "contacto": "Pedro Martínez",
+      "telefono": "+58 412-5551122",
+      "email": "pedro@equiposavic.com",
+      "direccion": "Zona Industrial 8",
+      "id_usuario": 1,
+      "id": "c3d4"
+    },
+    {
+      "id_proveedor": 4,
+      "nombre": "TransAvícola",
+      "tipo": "Transporte",
+      "contacto": "Luis Rivas",
+      "telefono": "+58 416-3344556",
+      "email": "luis@transavicola.com",
+      "direccion": "Carretera Nacional Km 12",
+      "id_usuario": 3,
+      "id": "e5f6"
+    },
+    {
+      "id_proveedor": 5,
+      "nombre": "Servicios Integrales Avícolas",
+      "tipo": "Servicios",
+      "contacto": "Carmen Díaz",
+      "telefono": "+58 426-7788990",
+      "email": "carmen@serviciosavic.com",
+      "direccion": "Callejón Los Pinos 22",
+      "id_usuario": 2,
+      "id": "g7h8"
+    }
+  ],
+  "alianzas": [
+    {
+      "id_alianza": 1,
+      "id_proveedor": 1,
+      "fecha_inicio": "2024-01-05",
+      "condiciones": "Entrega mensual, pago a 30 días",
+      "id": "8dff"
+    }
+  ],
+  "compras": [
+    {
+      "id_compra": 1,
+      "id_insumo": 1,
+      "id_proveedor": 1,
+      "fecha": "2024-02-15",
+      "cantidad": 200,
+      "precio_total": 5000,
+      "id": "e12e"
+    }
+  ],
+  "banco_semillas": [
+    {
+      "id_banco": 1,
+      "id_insumo": 1,
+      "cantidad": 50,
+      "fecha_ingreso": "2024-03-10",
+      "tipo_forraje": "Alfalfa",
+      "id": "e989"
+    }
+  ],
+  "inventario": [
+    {
+      "id_inventario": 1,
+      "id_insumo": 1,
+      "cantidad": 50,
+      "fecha": "2025-06-01",
+      "motivo": "Producción diaria",
+      "id": "inv1"
+    },
+    {
+      "id_inventario": 2,
+      "id_insumo": 2,
+      "cantidad": 10,
+      "fecha": "2025-06-02",
+      "motivo": "Ingreso pollos para venta",
+      "id": "inv2"
+    },
+    {
+      "id_inventario": 3,
+      "id_insumo": 3,
+      "cantidad": 20,
+      "fecha": "2025-06-03",
+      "motivo": "Procesamiento de pollos",
+      "id": "inv3"
+    },
+    {
+      "id_inventario": 4,
+      "id_insumo": 4,
+      "cantidad": 8,
+      "fecha": "2025-06-04",
+      "motivo": "Recolección de gallinaza",
+      "id": "inv4"
+    },
+    {
+      "id_inventario": 5,
+      "id_insumo": 5,
+      "cantidad": 3,
+      "fecha": "2025-06-05",
+      "motivo": "Recolección de pluma",
+      "id": "inv5"
+    }
+  ],
+  "clientes": [
+    {
+      "id_cliente": 1,
+      "nombre": "Pollos Express",
+      "tipo": "Empresa",
+      "contacto": "Maria Ruiz",
+      "direccion": "Av Siempre Viva 742",
+      "id_usuario": 2,
+      "id": "fee1"
+    }
+  ],
+  "ventas": [
+    {
+      "id_venta": 1,
+      "id_cliente": 1,
+      "fecha": "2024-03-20",
+      "total": 6200,
+      "estado": "Pagada",
+      "id": "b492"
+    },
+    {
+      "id": "e58e",
+      "id_cliente": 1,
+      "fecha": "2025-06-25",
+      "total": 1,
+      "estado": "Pagado",
+      "descripcion": "asd",
+      "id_insumo": 6,
+      "cantidad": 100,
+      "precio_unitario": 10
+    },
+    {
+      "id": "0bcb",
+      "id_cliente": 1,
+      "fecha": "2025-07-06",
+      "total": 100,
+      "estado": "Pendiente",
+      "descripcion": "Pago con retraso",
+      "id_insumo": 1,
+      "cantidad": 10,
+      "precio_unitario": 1
+    }
+  ],
+  "detalle_ventas": [
+    {
+      "id_detalle": 1,
+      "id_venta": 1,
+      "id_insumo": 1,
+      "cantidad": 180,
+      "precio_unitario": 30,
+      "id": "9a99"
+    },
+    {
+      "id_detalle": 2,
+      "id_venta": 1,
+      "id_insumo": 2,
+      "cantidad": 5,
+      "precio_unitario": 40,
+      "id": "ed2e"
+    }
+  ],
+  "pagos": [
+    {
+      "id_pago": 1,
+      "id_venta": 1,
+      "fecha": "2024-03-21",
+      "monto": 6200,
+      "metodo": "Transferencia",
+      "referencia": "TX123456",
+      "id": "ce5c"
+    }
+  ],
+  "predicciones_demanda": [
+    {
+      "id_prediccion": 1,
+      "fecha": "2024-04-01",
+      "venta_real_historica": 6000,
+      "prediccion_venta": 6500,
+      "id": "5349"
+    }
+  ]
+}

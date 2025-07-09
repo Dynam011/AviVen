@@ -18,6 +18,12 @@ import CIcon from '@coreui/icons-react'
 
 import avatar8 from './../../assets/images/avatars/avatar.png'
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('usuario')
+    navigate('/login')
+  }
+
 const AppHeaderDropdown = () => {
   return (
     <CDropdown variant="nav-item">
@@ -38,8 +44,8 @@ const AppHeaderDropdown = () => {
         
 
         <CDropdownDivider />
-        <CDropdownItem href="#">
-          <CIcon icon={cilDoor} className="me-2"/>
+        <CDropdownItem href="/login" onClick={handleLogout}>
+          <CIcon icon={cilDoor} className="me-2" />
           Log out
         </CDropdownItem>
       </CDropdownMenu>

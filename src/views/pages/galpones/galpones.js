@@ -1,48 +1,46 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-  CCard, CCardBody, CCardHeader, CCol, CRow, CForm, CFormLabel, CFormInput,
-  CButton, CFormSelect, CFormFeedback, CBadge, CProgress, CAlert, CImage,
-  CListGroup, CListGroupItem, CSidebar, CModal, CModalHeader, CModalBody,
-  CModalFooter, CNav, CNavItem, CNavLink
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CCol,
+  CRow,
+  CForm,
+  CFormLabel,
+  CFormInput,
+  CButton,
+  CFormSelect,
+  CFormFeedback,
+  CBadge,
+  CProgress,
+  CAlert,
+  CImage,
+  CListGroup,
+  CListGroupItem,
+  CSidebar,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalFooter,
+  CNav,
+  CNavItem,
+  CNavLink,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilWarning, cilCheckCircle, cilLightbulb, cilPlus, cilList, cilGrid, cilCalendar } from '@coreui/icons'
+import {
+  cilWarning,
+  cilCheckCircle,
+  cilLightbulb,
+  cilPlus,
+  cilList,
+  cilGrid,
+  cilCalendar,
+} from '@coreui/icons'
 
-// Mock de galpones
+const API_URL = 'http://localhost:3001'
 const tiposVentilacion = ['Natural', 'Mecánica', 'Automatizada']
 const tiposIluminacion = ['LED', 'Incandescente', 'Natural']
 const capacidadMaxima = 5000
-
-const mockGalpones = [
-  {
-    id: 1,
-    nombre: 'Galpón Norte',
-    capacidad: 2000,
-    aves: 1950,
-    ventilacion: 'Mecánica',
-    iluminacion: 'LED',
-    mantenimiento: [
-      { fecha: '2025-05-10', tarea: 'Limpieza general', estado: 'Completado' },
-      { fecha: '2025-06-01', tarea: 'Revisión ventiladores', estado: 'Pendiente' },
-    ],
-    ambiente: { temp: 24, humedad: 60 },
-    plano: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 2,
-    nombre: 'Galpón Sur',
-    capacidad: 3000,
-    aves: 2950,
-    ventilacion: 'Automatizada',
-    iluminacion: 'Natural',
-    mantenimiento: [
-      { fecha: '2025-05-15', tarea: 'Desinfección', estado: 'Completado' },
-      { fecha: '2025-06-03', tarea: 'Cambio de lámparas', estado: 'Pendiente' },
-    ],
-    ambiente: { temp: 26, humedad: 65 },
-    plano: 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=400&q=80',
-  },
-]
 
 // Utilidad para calcular ocupación
 function ocupacion(aves, capacidad) {
@@ -61,8 +59,83 @@ const cierreRegistro = new Date()
 cierreRegistro.setDate(cierreRegistro.getDate() + 3)
 const cierreStr = cierreRegistro.toLocaleDateString()
 
+// Componente reutilizable para la tarjeta de un galpón
+const GalponCard = ({ galpon }) => {
+  const ocupacionPorcentaje = ocupacion(galpon.aves, galpon.capacidad)
+  const ocupacionColor =
+    ocupacionPorcentaje > 90 ? 'danger' : ocupacionPorcentaje > 75 ? 'warning' : 'success'
+
+  return (
+    <CCard className="h-100 shadow-sm">
+      <CCardHeader className="d-flex justify-content-between align-items-center">
+        <strong>{galpon.nombre}</strong>
+        <CBadge color={ocupacionColor}>{ocupacionPorcentaje}% Ocupado</CBadge>
+      </CCardHeader>
+      <CCardBody>
+        <div className="d-flex align-items-start">
+          <CImage
+            src="https://images.unsplash.com/photo-1694885169342-909981fb408a?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=400&q=100"
+            alt={`Plano del ${galpon.nombre}`}
+            style={{
+              width: 140,
+              height: 100,
+              objectFit: 'cover',
+              borderRadius: 6,
+              marginRight: 16,
+            }}
+          />
+          <div className="flex-grow-1">
+            <div>
+              <strong>Aves:</strong> {galpon.aves} / {galpon.capacidad}
+            </div>
+            <div className="mt-1">
+              <CIcon icon={cilGrid} className="me-1 text-info" /> {galpon.ventilacion}
+              <CIcon icon={cilLightbulb} className="ms-3 me-1 text-warning" /> {galpon.iluminacion}
+            </div>
+            <div className="mt-1">
+              <CBadge color="info" className="me-2">
+                Temp: {galpon.ambiente.temp}°C
+              </CBadge>
+              <CBadge color="primary">Humedad: {galpon.ambiente.humedad}%</CBadge>
+            </div>
+          </div>
+        </div>
+        <CProgress
+          className="mt-3"
+          value={ocupacionPorcentaje}
+          color={ocupacionColor}
+          animated
+          style={{ height: 12 }}
+        />
+        {galpon.mantenimiento && galpon.mantenimiento.length > 0 && (
+          <div className="mt-3">
+            <strong>Mantenimiento:</strong>
+            <ul className="mb-0 ps-3">
+              {galpon.mantenimiento.map((m, i) => (
+                <li key={i}>
+                  <CIcon icon={cilCalendar} className="me-1" />
+                  {m.fecha} - {m.tarea}{' '}
+                  <CBadge color={m.estado === 'Pendiente' ? 'warning' : 'success'}>
+                    {m.estado}
+                  </CBadge>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {ocupacionPorcentaje > 90 && (
+          <CAlert color="danger" className="mt-3 p-2">
+            <CIcon icon={cilWarning} className="me-1" />
+            ¡Alerta! Capacidad máxima próxima.
+          </CAlert>
+        )}
+      </CCardBody>
+    </CCard>
+  )
+}
+
 const Galpones = () => {
-  const [galpones, setGalpones] = useState(mockGalpones)
+  const [galpones, setGalpones] = useState([])
   const [form, setForm] = useState({
     nombre: '',
     capacidad: '',
@@ -74,9 +147,27 @@ const Galpones = () => {
   const [vista, setVista] = useState('grid')
   const [showModal, setShowModal] = useState(false)
 
+  // Cargar galpones desde json-server
+  useEffect(() => {
+    fetch(`${API_URL}/galpones`)
+      .then((res) => res.json())
+      .then((data) =>
+        setGalpones(
+          data.map((g) => ({
+            ...g,
+            mantenimiento: g.mantenimiento || [],
+            ambiente: g.ambiente || { temp: 25, humedad: 60 },
+            plano: g.plano || '',
+            aves: g.aves || 0, // Si no existe, poner 0
+          })),
+        ),
+      )
+  }, [])
+
   // Validación automática de capacidad
   const validarCapacidad = (capacidad, aves) => {
-    if (!capacidad || isNaN(capacidad) || capacidad <= 0 || capacidad > capacidadMaxima) return false
+    if (!capacidad || isNaN(capacidad) || capacidad <= 0 || capacidad > capacidadMaxima)
+      return false
     if (aves && Number(aves) > Number(capacidad)) return false
     return true
   }
@@ -88,7 +179,7 @@ const Galpones = () => {
   }
 
   // Guardar galpón
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setFormError('')
     if (!form.nombre || !form.capacidad || !form.aves || !form.ventilacion || !form.iluminacion) {
@@ -99,126 +190,34 @@ const Galpones = () => {
       setFormError(`Capacidad inválida o recuento de aves supera el máximo (${capacidadMaxima}).`)
       return
     }
-    setGalpones([
-      ...galpones,
-      {
-        id: galpones.length + 1,
-        nombre: form.nombre,
-        capacidad: Number(form.capacidad),
-        aves: Number(form.aves),
-        ventilacion: form.ventilacion,
-        iluminacion: form.iluminacion,
-        mantenimiento: [],
-        ambiente: { temp: 25, humedad: 60 },
-        plano: '',
-      },
-    ])
+    const payload = {
+      nombre: form.nombre,
+      capacidad: Number(form.capacidad),
+      aves: Number(form.aves),
+      ventilacion: form.ventilacion,
+      iluminacion: form.iluminacion,
+      mantenimiento: [],
+      ambiente: { temp: 25, humedad: 60 },
+      plano: '',
+    }
+    // POST a json-server
+    const res = await fetch(`${API_URL}/galpones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const nuevo = await res.json()
+    setGalpones([...galpones, nuevo])
     setForm({ nombre: '', capacidad: '', aves: '', ventilacion: '', iluminacion: '' })
     setShowModal(false)
   }
 
-  // Plano interactivo (mapa de calor simple)
-  const renderPlano = () => (
-    <CRow className="mb-3">
-      {galpones.map(g => (
-        <CCol key={g.id} md={6} className="mb-2">
-          <CCard>
-            <CCardHeader>
-              <strong>{g.nombre}</strong>
-              <CBadge
-                color={ocupacion(g.aves, g.capacidad) > 90 ? 'danger' : ocupacion(g.aves, g.capacidad) > 75 ? 'warning' : 'success'}
-                className="ms-2"
-              >
-                {ocupacion(g.aves, g.capacidad)}%
-              </CBadge>
-            </CCardHeader>
-            <CCardBody>
-              <CImage src={g.plano} width={180} height={90} style={{ objectFit: 'cover', borderRadius: 8 }} />
-              <CProgress
-                className="mt-3"
-                value={ocupacion(g.aves, g.capacidad)}
-                color={ocupacion(g.aves, g.capacidad) > 90 ? 'danger' : ocupacion(g.aves, g.capacidad) > 75 ? 'warning' : 'success'}
-                animated
-                style={{ height: 12 }}
-              />
-              <div className="mt-2">
-                <CIcon icon={cilGrid} className="me-1 text-info" /> {g.ventilacion}
-                <CIcon icon={cilLightbulb} className="ms-3 me-1 text-warning" /> {g.iluminacion}
-              </div>
-              <div className="mt-2">
-                <CBadge color="info" className="me-2">Temp: {g.ambiente.temp}°C</CBadge>
-                <CBadge color="primary">Humedad: {g.ambiente.humedad}%</CBadge>
-              </div>
-              <div className="mt-2">
-                <strong>Mantenimiento:</strong>
-                <ul className="mb-0">
-                  {g.mantenimiento.map((m, i) => (
-                    <li key={i}>
-                      <CIcon icon={cilCalendar} className="me-1" />
-                      {m.fecha} - {m.tarea} <CBadge color={m.estado === 'Pendiente' ? 'warning' : 'success'}>{m.estado}</CBadge>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {ocupacion(g.aves, g.capacidad) > 90 && (
-                <CAlert color="danger" className="mt-2 p-2">
-                  <CIcon icon={cilWarning} className="me-1" />
-                  ¡Alerta! El galpón está cerca de su capacidad máxima.
-                </CAlert>
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      ))}
-    </CRow>
-  )
-
   // Listado en cuadrícula
   const renderGrid = () => (
     <CRow>
-      {galpones.map(g => (
-        <CCol key={g.id} md={6} className="mb-3">
-          <CCard>
-            <CCardHeader>
-              <strong>{g.nombre}</strong>
-              <CBadge
-                color={ocupacion(g.aves, g.capacidad) > 90 ? 'danger' : ocupacion(g.aves, g.capacidad) > 75 ? 'warning' : 'success'}
-                className="ms-2"
-              >
-                {ocupacion(g.aves, g.capacidad)}%
-              </CBadge>
-            </CCardHeader>
-            <CCardBody>
-              <div>
-                <CIcon icon={cilCheckCircle} className="me-1 text-info" /> {g.ventilacion}
-                <CIcon icon={cilLightbulb} className="ms-3 me-1 text-warning" /> {g.iluminacion}
-              </div>
-              <div className="mt-2">
-                <CBadge color="info" className="me-2">Temp: {g.ambiente.temp}°C</CBadge>
-                <CBadge color="primary">Humedad: {g.ambiente.humedad}%</CBadge>
-              </div>
-              <div className="mt-2">
-                <strong>Aves:</strong> {g.aves} / {g.capacidad}
-              </div>
-              <div className="mt-2">
-                <strong>Mantenimiento:</strong>
-                <ul className="mb-0">
-                  {g.mantenimiento.map((m, i) => (
-                    <li key={i}>
-                      <CIcon icon={cilCalendar} className="me-1" />
-                      {m.fecha} - {m.tarea} <CBadge color={m.estado === 'Pendiente' ? 'warning' : 'success'}>{m.estado}</CBadge>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {ocupacion(g.aves, g.capacidad) > 90 && (
-                <CAlert color="danger" className="mt-2 p-2">
-                  <CIcon icon={cilWarning} className="me-1" />
-                  ¡Alerta! El galpón está cerca de su capacidad máxima.
-                </CAlert>
-              )}
-            </CCardBody>
-          </CCard>
+      {galpones.map((g) => (
+        <CCol key={g.id_galpon || g.id} md={6} className="mb-3">
+          <GalponCard galpon={g} />
         </CCol>
       ))}
     </CRow>
@@ -227,19 +226,45 @@ const Galpones = () => {
   // Listado en tarjetas
   const renderList = () => (
     <CListGroup>
-      {galpones.map(g => (
-        <CListGroupItem key={g.id} className="d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{g.nombre}</strong> - {g.aves}/{g.capacidad} aves
-            <CBadge
-              color={ocupacion(g.aves, g.capacidad) > 90 ? 'danger' : ocupacion(g.aves, g.capacidad) > 75 ? 'warning' : 'success'}
-              className="ms-2"
-            >
-              {ocupacion(g.aves, g.capacidad)}%
-            </CBadge>
+      {galpones.map((g) => (
+        <CListGroupItem
+          key={g.id_galpon || g.id}
+          className="d-flex justify-content-between align-items-center"
+        >
+          <div className="d-flex align-items-center">
+            <img
+              src="https://images.unsplash.com/photo-1694885169342-909981fb408a?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=400&q=80"
+              alt="Galpón"
+              style={{
+                width: 60,
+                height: 40,
+                objectFit: 'cover',
+                borderRadius: 6,
+                marginRight: 16,
+                border: '1px solid #333', // Borde para depuración
+                display: 'block',
+              }}
+            />
+            <div>
+              <strong>{g.nombre}</strong> - {g.aves}/{g.capacidad} aves
+              <CBadge
+                color={
+                  ocupacion(g.aves, g.capacidad) > 90
+                    ? 'danger'
+                    : ocupacion(g.aves, g.capacidad) > 75
+                      ? 'warning'
+                      : 'success'
+                }
+                className="ms-2"
+              >
+                {ocupacion(g.aves, g.capacidad)}%
+              </CBadge>
+            </div>
           </div>
           <div>
-            <CBadge color="info" className="me-2">Temp: {g.ambiente.temp}°C</CBadge>
+            <CBadge color="info" className="me-2">
+              Temp: {g.ambiente.temp}°C
+            </CBadge>
             <CBadge color="primary">Humedad: {g.ambiente.humedad}%</CBadge>
           </div>
         </CListGroupItem>
@@ -268,7 +293,8 @@ const Galpones = () => {
                 animated
               />
               <div className="mt-1">
-                <CBadge color="primary">{totalAves} aves</CBadge> / <CBadge color="secondary">{totalCap} capacidad</CBadge>
+                <CBadge color="primary">{totalAves} aves</CBadge> /{' '}
+                <CBadge color="secondary">{totalCap} capacidad</CBadge>
               </div>
             </div>
             <div className="mb-2">
@@ -277,7 +303,10 @@ const Galpones = () => {
                 <CIcon icon={cilCalendar} className="me-1" />
                 {cierreStr}
               </CAlert>
-              <small className="text-muted">El registro se cerrará 3 días laborables antes de cualquier actualización importante.</small>
+              <small className="text-muted">
+                El registro se cerrará 3 días laborables antes de cualquier actualización
+                importante.
+              </small>
             </div>
           </div>
         </CSidebar>
@@ -309,8 +338,7 @@ const Galpones = () => {
             </div>
           </CCardHeader>
           <CCardBody>
-            <h6 className="mb-3">Plano interactivo (mapa de calor)</h6>
-            {renderPlano()}
+           
             <h6 className="mb-3">Listado de galpones</h6>
             {vista === 'grid' ? renderGrid() : renderList()}
           </CCardBody>
@@ -365,8 +393,10 @@ const Galpones = () => {
               className="mb-3"
             >
               <option value="">Seleccione</option>
-              {tiposVentilacion.map(t => (
-                <option key={t} value={t}>{t}</option>
+              {tiposVentilacion.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
               ))}
             </CFormSelect>
             <CFormLabel>Tipo de iluminación</CFormLabel>
@@ -378,8 +408,10 @@ const Galpones = () => {
               className="mb-3"
             >
               <option value="">Seleccione</option>
-              {tiposIluminacion.map(t => (
-                <option key={t} value={t}>{t}</option>
+              {tiposIluminacion.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
               ))}
             </CFormSelect>
             {formError && <CFormFeedback className="d-block mb-2">{formError}</CFormFeedback>}

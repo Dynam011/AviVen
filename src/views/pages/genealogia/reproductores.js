@@ -1,44 +1,20 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CCard, CCardBody, CCardHeader, CCol, CRow, CForm, CFormLabel, CFormInput,
-  CButton, CFormSelect, CFormFeedback, CFormCheck, CTable, CTableHead, CTableRow,
+  CButton, CFormSelect, CFormFeedback, CTable, CTableHead, CTableRow,
   CTableHeaderCell, CTableBody, CTableDataCell, CBadge, CModal, CModalHeader,
-  CModalBody, CModalFooter, CImage, CTooltip, CInputGroup, CInputGroupText
+  CModalBody, CModalFooter, CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilUser, cilCheckCircle, cilXCircle, cilPaw, cilPlus, cilPen, cilTrash, cilChevronRight } from '@coreui/icons'
+import { cilUser, cilPaw, cilPen, cilTrash, cilPlus } from '@coreui/icons'
 
-// Mock de reproductores
+const API_URL = 'http://localhost:3001'
+
 const estados = [
   { value: 'activo', label: 'Activo', color: 'success' },
   { value: 'enfermo', label: 'Enfermo', color: 'warning' },
   { value: 'retirado', label: 'Retirado', color: 'secondary' },
   { value: 'fallecido', label: 'Fallecido', color: 'danger' },
-]
-
-const mockReproductores = [
-  {
-    id: 1,
-    codigo: 'R-001',
-    fecha_nacimiento: '2022-01-10',
-    sexo: 'M',
-    estado: 'activo',
-    foto: '',
-    carrera: 'Gallina ponedora',
-    registros: 'Vacunado, revisión veterinaria 2023',
-    genealogia: { padre: 'R-010', madre: 'R-011' },
-  },
-  {
-    id: 2,
-    codigo: 'R-002',
-    fecha_nacimiento: '2021-07-22',
-    sexo: 'F',
-    estado: 'enfermo',
-    foto: '',
-    carrera: 'Gallina reproductora',
-    registros: 'Tratamiento antibiótico 2024',
-    genealogia: { padre: 'R-012', madre: 'R-013' },
-  },
 ]
 
 // Utilidad para calcular edad
@@ -54,342 +30,240 @@ function calcularEdad(fecha) {
   return `${edad} año(s)`
 }
 
+// Componente de formulario reutilizable
+const GalloForm = ({ form, galpones, handleChange, handleSubmit, formError, editId, loading }) => (
+  <CForm onSubmit={handleSubmit}>
+    <CFormLabel>Cantidad de Gallos</CFormLabel>
+    <CFormInput
+      name="cantidad"
+      type="number"
+      value={form.cantidad}
+      onChange={handleChange}
+      required
+      className="mb-3"
+      min={1}
+      placeholder="Ej: 120"
+    />
+    <CFormLabel>Fecha de Ingreso</CFormLabel>
+    <CFormInput
+      type="date"
+      name="fecha_ingreso"
+      value={form.fecha_ingreso}
+      onChange={handleChange}
+      required
+      className="mb-3"
+      max={new Date().toISOString().split('T')[0]}
+    />
+    <CFormLabel>Estado</CFormLabel>
+    <CFormSelect name="estado" value={form.estado} onChange={handleChange} required className="mb-3">
+      <option value="">Seleccione estado</option>
+      {estados.map((e) => (
+        <option key={e.value} value={e.value}>
+          {e.label}
+        </option>
+      ))}
+    </CFormSelect>
+    <CFormLabel>Galpón</CFormLabel>
+    <CFormSelect name="galpon" value={form.galpon} onChange={handleChange} required className="mb-3">
+      <option value="">Seleccione galpón</option>
+      {galpones.map((g) => (
+        <option key={g.id_galpon || g.id} value={g.nombre || g.id_galpon}>
+          {g.nombre || `Galpón ${g.id_galpon || g.id}`}
+        </option>
+      ))}
+    </CFormSelect>
+    <CFormLabel>Observaciones</CFormLabel>
+    <CFormInput
+      name="observaciones"
+      value={form.observaciones}
+      onChange={handleChange}
+      placeholder="Ej: Gallos de reemplazo"
+      className="mb-3"
+    />
+    {formError && <CFormFeedback className="d-block mb-2 text-danger">{formError}</CFormFeedback>}
+    <CButton color="success" type="submit" className="w-100 mt-3" disabled={loading}>
+      {loading ? (
+        <CSpinner size="sm" />
+      ) : editId ? (
+        'Actualizar Registro'
+      ) : (
+        'Guardar Registro'
+      )}
+    </CButton>
+  </CForm>
+)
+
 const Reproductores = () => {
-  const [reproductores, setReproductores] = useState(mockReproductores)
+  const [gallos, setGallos] = useState([])
+  const [galpones, setGalpones] = useState([])
   const [form, setForm] = useState({
-    codigo: '',
-    fecha_nacimiento: '',
-    sexo: '',
+    cantidad: '',
+    fecha_ingreso: '',
     estado: '',
-    foto: '',
-    carrera: '',
-    registros: '',
+    galpon: '',
+    observaciones: '',
   })
   const [formError, setFormError] = useState('')
-  const [selectedIds, setSelectedIds] = useState([])
-  const [previewGenealogia, setPreviewGenealogia] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [editId, setEditId] = useState(null)
-  const [fotoPreview, setFotoPreview] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // Validación automática del código
-  const validarCodigo = (codigo) => {
-    if (!codigo) return false
-    return !reproductores.some(r => r.codigo === codigo && r.id !== editId)
-  }
+  // Cargar galpones y gallos desde json-server
+  useEffect(() => {
+    fetch(`${API_URL}/galpones`)
+      .then(res => res.json())
+      .then(setGalpones)
+    fetch(`${API_URL}/gallos`)
+      .then(res => res.json())
+      .then(setGallos)
+  }, [])
 
   // Manejo de cambios en el formulario
   const handleChange = (e) => {
-    const { name, value, files } = e.target
-    if (name === 'foto' && files && files[0]) {
-      setForm({ ...form, foto: files[0] })
-      setFotoPreview(URL.createObjectURL(files[0]))
-    } else {
-      setForm({ ...form, [name]: value })
-    }
+    const { name, value } = e.target
+    setForm({ ...form, [name]: value })
   }
 
-  // Guardar o editar reproductor
-  const handleSubmit = (e) => {
+  // Guardar o editar registro de gallos por galpón
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setFormError('')
-    if (!form.codigo || !validarCodigo(form.codigo)) {
-      setFormError('Código inválido o duplicado.')
-      return
-    }
-    if (!form.fecha_nacimiento || !form.sexo || !form.estado) {
+    setLoading(true)
+    if (!form.cantidad || !form.fecha_ingreso || !form.estado || !form.galpon) {
       setFormError('Complete todos los campos obligatorios.')
       return
     }
+    if (isNaN(form.cantidad) || Number(form.cantidad) <= 0) {
+      setFormError('La cantidad debe ser un número positivo.')
+      return
+    }
+    // Validar que no se repita galpón activo
+    if (
+      !editId && gallos.some((g) => g.galpon === form.galpon && g.estado === 'activo')
+    ) {
+      setFormError('Ya hay un registro de gallos activos en este galpón.')
+      return
+    }
+
+    const payload = {
+      cantidad: Number(form.cantidad),
+      fecha_ingreso: form.fecha_ingreso,
+      estado: form.estado,
+      galpon: form.galpon,
+      observaciones: form.observaciones,
+    }
+
     if (editId) {
-      setReproductores(reproductores.map(r =>
-        r.id === editId ? { ...form, id: editId, foto: fotoPreview || r.foto } : r
-      ))
+      await fetch(`${API_URL}/gallos/${editId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, id: editId }),
+      })
+      setGallos(gallos.map((g) => (g.id === editId ? { ...payload, id: editId } : g)))
     } else {
-      setReproductores([
-        ...reproductores,
-        {
-          ...form,
-          id: reproductores.length + 1,
-          foto: fotoPreview,
-        },
-      ])
+      const res = await fetch(`${API_URL}/gallos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const nuevo = await res.json()
+      setGallos([...gallos, nuevo])
     }
     setForm({
-      codigo: '',
-      fecha_nacimiento: '',
-      sexo: '',
+      cantidad: '',
+      fecha_ingreso: '',
       estado: '',
-      foto: '',
-      carrera: '',
-      registros: '',
+      galpon: '',
+      observaciones: '',
     })
-    setFotoPreview('')
     setEditId(null)
     setShowModal(false)
+    setLoading(false)
   }
 
-  // Edición en línea
+  // Edición
   const handleEdit = (id) => {
-    const r = reproductores.find(r => r.id === id)
-    setForm({ ...r })
-    setFotoPreview(r.foto)
+    const g = gallos.find((g) => g.id === id)
+    setForm({ ...g })
     setEditId(id)
     setShowModal(true)
   }
 
-  // Selección múltiple para operaciones por lotes
-  const handleSelect = (id) => {
-    setSelectedIds(selectedIds.includes(id)
-      ? selectedIds.filter(i => i !== id)
-      : [...selectedIds, id])
+  // Eliminar registro
+  const handleDelete = async (id) => {
+    await fetch(`${API_URL}/gallos/${id}`, { method: 'DELETE' })
+    setGallos(gallos.filter((g) => g.id !== id))
   }
 
-  // Operación por lotes: actualizar estado
-  const handleBatchUpdate = (estado) => {
-    setReproductores(reproductores.map(r =>
-      selectedIds.includes(r.id) ? { ...r, estado } : r
-    ))
-    setSelectedIds([])
-  }
-
-  // Previsualización genealógica (simulada)
-  const handlePreviewGenealogia = (r) => {
-    setPreviewGenealogia(r.genealogia)
+  // Abrir modal para nuevo registro
+  const handleAddNew = () => {
+    setEditId(null)
+    setForm({
+      cantidad: '',
+      fecha_ingreso: '',
+      estado: '',
+      galpon: '',
+      observaciones: '',
+    })
+    setShowModal(true)
   }
 
   return (
-    <CRow className="g-3">
-      {/* Panel de formulario */}
-      <CCol md={4}>
-        <CCard>
-          <CCardHeader>
-            <CIcon icon={cilUser} className="me-2 text-success" />
-            <strong>{editId ? 'Editar' : 'Registrar'} Reproductor</strong>
-          </CCardHeader>
-          <CCardBody>
-            <CForm onSubmit={handleSubmit}>
-              <CFormLabel>Código del Criador</CFormLabel>
-              <CInputGroup className="mb-3">
-                <CFormInput
-                  name="codigo"
-                  value={form.codigo}
-                  onChange={handleChange}
-                  required
-                  invalid={form.codigo && !validarCodigo(form.codigo)}
-                  placeholder="Ej: R-007"
-                />
-                <CInputGroupText>
-                  {form.codigo && validarCodigo(form.codigo)
-                    ? <CIcon icon={cilCheckCircle} className="text-success" />
-                    : <CIcon icon={cilXCircle} className="text-danger" />}
-                </CInputGroupText>
-              </CInputGroup>
-              <CFormLabel>Fecha de Nacimiento</CFormLabel>
-              <CFormInput
-                type="date"
-                name="fecha_nacimiento"
-                value={form.fecha_nacimiento}
-                onChange={handleChange}
-                required
-                className="mb-3"
-              />
-              <div className="mb-3">
-                <CFormLabel>Edad</CFormLabel>
-                <div>{calcularEdad(form.fecha_nacimiento)}</div>
-              </div>
-              <CFormLabel>Sexo</CFormLabel>
-              <div className="mb-3">
-                <CFormCheck
-                  inline
-                  type="radio"
-                  name="sexo"
-                  label="Macho"
-                  value="M"
-                  checked={form.sexo === 'M'}
-                  onChange={handleChange}
-                />
-                <CFormCheck
-                  inline
-                  type="radio"
-                  name="sexo"
-                  label="Hembra"
-                  value="F"
-                  checked={form.sexo === 'F'}
-                  onChange={handleChange}
-                />
-              </div>
-              <CFormLabel>Estado</CFormLabel>
-              <CFormSelect
-                name="estado"
-                value={form.estado}
-                onChange={handleChange}
-                required
-                className="mb-3"
-              >
-                <option value="">Seleccione estado</option>
-                {estados.map(e => (
-                  <option key={e.value} value={e.value}>{e.label}</option>
-                ))}
-              </CFormSelect>
-              <CFormLabel>Carrera/Especialidad</CFormLabel>
-              <CFormInput
-                name="carrera"
-                value={form.carrera}
-                onChange={handleChange}
-                placeholder="Ej: Gallina ponedora"
-                className="mb-3"
-              />
-              <CFormLabel>Registros Veterinarios</CFormLabel>
-              <CFormInput
-                name="registros"
-                value={form.registros}
-                onChange={handleChange}
-                placeholder="Ej: Vacunado, revisión veterinaria"
-                className="mb-3"
-              />
-              <CFormLabel>Foto</CFormLabel>
-              <CFormInput
-                type="file"
-                name="foto"
-                accept="image/*"
-                onChange={handleChange}
-                className="mb-3"
-              />
-              {fotoPreview && (
-                <div className="mb-3">
-                  <CImage src={fotoPreview} thumbnail width={80} height={80} />
-                </div>
-              )}
-              {formError && <CFormFeedback className="d-block mb-2">{formError}</CFormFeedback>}
-              <CButton color="success" type="submit" className="w-100">
-                {editId ? 'Actualizar' : 'Registrar'}
-              </CButton>
-            </CForm>
-          </CCardBody>
-        </CCard>
-      </CCol>
-
+    <CRow>
       {/* Panel de listado */}
-      <CCol md={8}>
+      <CCol xs={12}>
         <CCard>
           <CCardHeader className="d-flex justify-content-between align-items-center">
-            <span>
+            <strong>
               <CIcon icon={cilPaw} className="me-2 text-primary" />
-              <strong>Reproductores Registrados</strong>
-            </span>
-            <div>
-              <CButton
-                color="secondary"
-                size="sm"
-                className="me-2"
-                disabled={selectedIds.length === 0}
-                onClick={() => handleBatchUpdate('retirado')}
-              >
-                Retirar seleccionados
-              </CButton>
-              <CButton
-                color="danger"
-                size="sm"
-                disabled={selectedIds.length === 0}
-                onClick={() => handleBatchUpdate('fallecido')}
-              >
-                Marcar como fallecidos
-              </CButton>
-            </div>
+              Gestión de Gallos por Galpón
+            </strong>
+            <CButton color="success" onClick={handleAddNew}>
+              <CIcon icon={cilPlus} className="me-2" /> Nuevo Registro
+            </CButton>
           </CCardHeader>
           <CCardBody style={{ overflowX: 'auto' }}>
             <CTable align="middle" hover responsive>
               <CTableHead>
                 <CTableRow>
-                  <CTableHeaderCell>
-                    <CFormCheck
-                      checked={selectedIds.length === reproductores.length}
-                      onChange={() =>
-                        setSelectedIds(
-                          selectedIds.length === reproductores.length
-                            ? []
-                            : reproductores.map(r => r.id)
-                        )
-                      }
-                    />
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Código</CTableHeaderCell>
-                  <CTableHeaderCell>Foto</CTableHeaderCell>
+                  <CTableHeaderCell>Galpón</CTableHeaderCell>
+                  <CTableHeaderCell>Cantidad</CTableHeaderCell>
+                  <CTableHeaderCell>Fecha Ingreso</CTableHeaderCell>
                   <CTableHeaderCell>Edad</CTableHeaderCell>
-                  <CTableHeaderCell>Sexo</CTableHeaderCell>
                   <CTableHeaderCell>Estado</CTableHeaderCell>
-                  <CTableHeaderCell>Carrera</CTableHeaderCell>
-                  <CTableHeaderCell>Registros</CTableHeaderCell>
-                  <CTableHeaderCell>Genealogía</CTableHeaderCell>
+                  <CTableHeaderCell>Observaciones</CTableHeaderCell>
                   <CTableHeaderCell>Acciones</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {reproductores.map(r => (
-                  <CTableRow key={r.id}>
+                {gallos.map((g) => (
+                  <CTableRow key={g.id}>
                     <CTableDataCell>
-                      <CFormCheck
-                        checked={selectedIds.includes(r.id)}
-                        onChange={() => handleSelect(r.id)}
-                      />
+                      {galpones.find((ga) => (ga.nombre || ga.id_galpon) === g.galpon)?.nombre ||
+                        `Galpón ${g.galpon}`}
                     </CTableDataCell>
-                    <CTableDataCell>{r.codigo}</CTableDataCell>
+                    <CTableDataCell>{g.cantidad}</CTableDataCell>
+                    <CTableDataCell>{g.fecha_ingreso}</CTableDataCell>
+                    <CTableDataCell>{calcularEdad(g.fecha_ingreso)}</CTableDataCell>
                     <CTableDataCell>
-                      {r.foto ? (
-                        <CImage src={r.foto} thumbnail width={40} height={40} />
-                      ) : (
-                        <CIcon icon={cilUser} size="lg" className="text-muted" />
-                      )}
-                    </CTableDataCell>
-                    <CTableDataCell>{calcularEdad(r.fecha_nacimiento)}</CTableDataCell>
-                    <CTableDataCell>
-                      <CBadge color={r.sexo === 'M' ? 'primary' : 'warning'}>
-                        {r.sexo === 'M' ? 'Macho' : 'Hembra'}
+                      <CBadge color={estados.find((e) => e.value === g.estado)?.color || 'secondary'}>
+                        {estados.find((e) => e.value === g.estado)?.label || g.estado}
                       </CBadge>
                     </CTableDataCell>
-                    <CTableDataCell>
-                      <CBadge color={estados.find(e => e.value === r.estado)?.color || 'secondary'}>
-                        {estados.find(e => e.value === r.estado)?.label || r.estado}
-                      </CBadge>
-                    </CTableDataCell>
-                    <CTableDataCell>{r.carrera}</CTableDataCell>
-                    <CTableDataCell>{r.registros}</CTableDataCell>
-                    <CTableDataCell>
-                      <CTooltip
-                        content={
-                          <div>
-                            <div><strong>Padre:</strong> {r.genealogia?.padre || '-'}</div>
-                            <div><strong>Madre:</strong> {r.genealogia?.madre || '-'}</div>
-                          </div>
-                        }
-                        placement="right"
-                      >
-                        <CButton
-                          color="light"
-                          size="sm"
-                          onMouseEnter={() => handlePreviewGenealogia(r)}
-                          onMouseLeave={() => setPreviewGenealogia(null)}
-                        >
-                          <CIcon icon={cilChevronRight} />
-                        </CButton>
-                      </CTooltip>
-                    </CTableDataCell>
+                    <CTableDataCell>{g.observaciones}</CTableDataCell>
                     <CTableDataCell>
                       <CButton
                         color="info"
                         size="sm"
                         className="me-1"
-                        onClick={() => handleEdit(r.id)}
+                        onClick={() => handleEdit(g.id)}
                       >
                         <CIcon icon={cilPen} />
                       </CButton>
                       <CButton
                         color="danger"
                         size="sm"
-                        onClick={() =>
-                          setReproductores(reproductores.filter(x => x.id !== r.id))
-                        }
+                        onClick={() => handleDelete(g.id)}
                       >
                         <CIcon icon={cilTrash} />
                       </CButton>
@@ -405,107 +279,18 @@ const Reproductores = () => {
       {/* Modal para formulario */}
       <CModal visible={showModal} onClose={() => setShowModal(false)}>
         <CModalHeader>
-          <strong>{editId ? 'Editar' : 'Registrar'} Reproductor</strong>
+          <strong>{editId ? 'Editar' : 'Registrar'} Gallos por Galpón</strong>
         </CModalHeader>
         <CModalBody>
-          <CForm onSubmit={handleSubmit}>
-            <CFormLabel>Código del Criador</CFormLabel>
-            <CInputGroup className="mb-3">
-              <CFormInput
-                name="codigo"
-                value={form.codigo}
-                onChange={handleChange}
-                required
-                invalid={form.codigo && !validarCodigo(form.codigo)}
-                placeholder="Ej: R-007"
-              />
-              <CInputGroupText>
-                {form.codigo && validarCodigo(form.codigo)
-                  ? <CIcon icon={cilCheckCircle} className="text-success" />
-                  : <CIcon icon={cilXCircle} className="text-danger" />}
-              </CInputGroupText>
-            </CInputGroup>
-            <CFormLabel>Fecha de Nacimiento</CFormLabel>
-            <CFormInput
-              type="date"
-              name="fecha_nacimiento"
-              value={form.fecha_nacimiento}
-              onChange={handleChange}
-              required
-              className="mb-3"
-            />
-            <div className="mb-3">
-              <CFormLabel>Edad</CFormLabel>
-              <div>{calcularEdad(form.fecha_nacimiento)}</div>
-            </div>
-            <CFormLabel>Sexo</CFormLabel>
-            <div className="mb-3">
-              <CFormCheck
-                inline
-                type="radio"
-                name="sexo"
-                label="Macho"
-                value="M"
-                checked={form.sexo === 'M'}
-                onChange={handleChange}
-              />
-              <CFormCheck
-                inline
-                type="radio"
-                name="sexo"
-                label="Hembra"
-                value="F"
-                checked={form.sexo === 'F'}
-                onChange={handleChange}
-              />
-            </div>
-            <CFormLabel>Estado</CFormLabel>
-            <CFormSelect
-              name="estado"
-              value={form.estado}
-              onChange={handleChange}
-              required
-              className="mb-3"
-            >
-              <option value="">Seleccione estado</option>
-              {estados.map(e => (
-                <option key={e.value} value={e.value}>{e.label}</option>
-              ))}
-            </CFormSelect>
-            <CFormLabel>Carrera/Especialidad</CFormLabel>
-            <CFormInput
-              name="carrera"
-              value={form.carrera}
-              onChange={handleChange}
-              placeholder="Ej: Gallina ponedora"
-              className="mb-3"
-            />
-            <CFormLabel>Registros Veterinarios</CFormLabel>
-            <CFormInput
-              name="registros"
-              value={form.registros}
-              onChange={handleChange}
-              placeholder="Ej: Vacunado, revisión veterinaria"
-              className="mb-3"
-            />
-            <CFormLabel>Foto</CFormLabel>
-            <CFormInput
-              type="file"
-              name="foto"
-              accept="image/*"
-              onChange={handleChange}
-              className="mb-3"
-            />
-            {fotoPreview && (
-              <div className="mb-3">
-                <CImage src={fotoPreview} thumbnail width={80} height={80} />
-              </div>
-            )}
-            {formError && <CFormFeedback className="d-block mb-2">{formError}</CFormFeedback>}
-            <CButton color="success" type="submit" className="w-100">
-              {editId ? 'Actualizar' : 'Registrar'}
-            </CButton>
-          </CForm>
+          <GalloForm
+            form={form}
+            galpones={galpones}
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+            formError={formError}
+            editId={editId}
+            loading={loading}
+          />
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setShowModal(false)}>

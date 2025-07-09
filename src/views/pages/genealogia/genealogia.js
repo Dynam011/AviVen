@@ -2,88 +2,67 @@ import React, { useState, useEffect } from 'react'
 import {
   CCard, CCardBody, CCardHeader, CCol, CRow, CForm, CFormLabel, CFormSelect,
   CButton, CInputGroup, CInputGroupText, CFormFeedback, CFormTextarea, CSpinner,
-  CModal, CModalHeader, CModalBody, CModalFooter, CTooltip, CBadge
+  CModal, CModalHeader, CModalBody, CModalFooter, CFormInput, CBadge
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilList ,cilPlus, cilSearch, cilUser, cilChevronRight, cilChevronBottom } from '@coreui/icons'
+import { cilList, cilPlus, cilSearch, cilUser, cilChevronRight, cilChevronBottom } from '@coreui/icons'
 
-// Simulación de datos de reproductores (reemplaza por fetch a tu API)
-const mockReproductores = [
-  { id: 1, codigo: 'R-001', sexo: 'M' },
-  { id: 2, codigo: 'R-002', sexo: 'F' },
-  { id: 3, codigo: 'R-003', sexo: 'M' },
-  { id: 4, codigo: 'R-004', sexo: 'F' },
-  { id: 5, codigo: 'R-005', sexo: 'M' },
-  { id: 6, codigo: 'R-006', sexo: 'F' },
+// Simulación de datos de lotes reproductores y galpones (reemplaza por fetch a tu API)
+const mockLotes = [
+  { id: 1, lote: 'Lote Gallinas 2024-01', tipo: 'Gallinas', galpon: 'Galpón 1' },
+  { id: 2, lote: 'Lote Gallos 2024-01', tipo: 'Gallos', galpon: 'Galpón 2' },
+  { id: 3, lote: 'Lote Gallinas 2024-02', tipo: 'Gallinas', galpon: 'Galpón 3' },
+  { id: 4, lote: 'Lote Gallos 2024-02', tipo: 'Gallos', galpon: 'Galpón 2' },
+]
+const mockGalpones = [
+  { id: 1, nombre: 'Galpón 1' },
+  { id: 2, nombre: 'Galpón 2' },
+  { id: 3, nombre: 'Galpón 3' },
 ]
 
-// Simulación de datos de genealogía (reemplaza por fetch a tu API)
-const mockGenealogia = [
-  { id: 1, padre: 1, madre: 2, observaciones: 'Línea A', hijos: [7] },
-  { id: 2, padre: 3, madre: 4, observaciones: 'Línea B', hijos: [8] },
-  { id: 7, padre: 1, madre: 2, observaciones: 'Nieto A', hijos: [] },
-  { id: 8, padre: 3, madre: 4, observaciones: 'Nieto B', hijos: [] },
+// Simulación de genealogía por lotes parentales
+const mockGenealogiaLotes = [
+  {
+    id: 1,
+    lote_gallinas: 1,
+    lote_gallos: 2,
+    lote_pollitos: 'Pollitos 2024-03',
+    galpon_eclosion: 3,
+    observaciones: 'Eclosión exitosa',
+  },
+  {
+    id: 2,
+    lote_gallinas: 3,
+    lote_gallos: 4,
+    lote_pollitos: 'Pollitos 2024-04',
+    galpon_eclosion: 1,
+    observaciones: 'Línea experimental',
+  },
 ]
 
-function getReproductoresBySexo(sexo) {
-  return mockReproductores.filter(r => r.sexo === sexo)
-}
-
-// Utilidad para construir árbol genealógico hasta 3 generaciones
-function buildGenealogyTree(genealogia, reproductores, rootId, depth = 3) {
-  if (!rootId || depth === 0) return null
-  const node = genealogia.find(g => g.id === rootId)
-  if (!node) return null
-  const padre = reproductores.find(r => r.id === node.padre)
-  const madre = reproductores.find(r => r.id === node.madre)
-  return {
-    id: node.id,
-    padre: padre ? { ...padre, sub: buildGenealogyTree(genealogia, reproductores, padre.id, depth - 1) } : null,
-    madre: madre ? { ...madre, sub: buildGenealogyTree(genealogia, reproductores, madre.id, depth - 1) } : null,
-    observaciones: node.observaciones,
-  }
-}
-
-// Evita referencias circulares en la cadena genealógica
-function hasCircularReference(genealogia, padreId, madreId, hijoId) {
-  const getAncestors = (id, visited = new Set()) => {
-    if (!id || visited.has(id)) return []
-    visited.add(id)
-    const node = genealogia.find(g => g.id === id)
-    if (!node) return []
-    return [
-      node.padre,
-      node.madre,
-      ...getAncestors(node.padre, visited),
-      ...getAncestors(node.madre, visited),
-    ]
-  }
-  const ancestors = [
-    ...getAncestors(padreId),
-    ...getAncestors(madreId),
-  ]
-  return ancestors.includes(hijoId)
-}
-
-const Genealogia = () => {
-  // Estados
-  const [reproductores, setReproductores] = useState([])
+const GenealogiaLotes = () => {
+  const [lotes, setLotes] = useState([])
+  const [galpones, setGalpones] = useState([])
   const [genealogia, setGenealogia] = useState([])
-  const [padreId, setPadreId] = useState('')
-  const [madreId, setMadreId] = useState('')
-  const [observaciones, setObservaciones] = useState('')
+  const [form, setForm] = useState({
+    lote_gallinas: '',
+    lote_gallos: '',
+    lote_pollitos: '',
+    galpon_eclosion: '',
+    observaciones: '',
+  })
   const [formError, setFormError] = useState('')
   const [search, setSearch] = useState('')
   const [filtered, setFiltered] = useState([])
-  const [selectedNode, setSelectedNode] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
 
   // Simula fetch inicial
   useEffect(() => {
-    setReproductores(mockReproductores)
-    setGenealogia(mockGenealogia)
-    setFiltered(mockGenealogia)
+    setLotes(mockLotes)
+    setGalpones(mockGalpones)
+    setGenealogia(mockGenealogiaLotes)
+    setFiltered(mockGenealogiaLotes)
   }, [])
 
   // Filtro instantáneo
@@ -93,72 +72,59 @@ const Genealogia = () => {
     } else {
       setFiltered(
         genealogia.filter(g =>
-          [g.padre, g.madre]
-            .map(id => reproductores.find(r => r.id === id)?.codigo || '')
+          [
+            lotes.find(l => l.id === g.lote_gallinas)?.lote || '',
+            lotes.find(l => l.id === g.lote_gallos)?.lote || '',
+            g.lote_pollitos || '',
+          ]
             .join(' ')
             .toLowerCase()
             .includes(search.toLowerCase())
         )
       )
     }
-  }, [search, genealogia, reproductores])
+  }, [search, genealogia, lotes])
 
   // Manejo de formulario
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setForm({ ...form, [name]: value })
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     setFormError('')
-    if (!padreId || !madreId) {
-      setFormError('Seleccione ambos padres.')
+    if (!form.lote_gallinas || !form.lote_gallos || !form.lote_pollitos || !form.galpon_eclosion) {
+      setFormError('Complete todos los campos obligatorios.')
       return
     }
-    if (padreId === madreId) {
-      setFormError('Padre y madre no pueden ser el mismo.')
+    if (form.lote_gallinas === form.lote_gallos) {
+      setFormError('El lote de gallinas y el de gallos deben ser diferentes.')
       return
     }
-    // Validación de referencia circular
-    if (hasCircularReference(genealogia, Number(padreId), Number(madreId), null)) {
-      setFormError('Referencia circular detectada en la genealogía.')
-      return
-    }
-    // Simula guardar
     setLoading(true)
     setTimeout(() => {
       setGenealogia([
         ...genealogia,
         {
           id: genealogia.length + 1,
-          padre: Number(padreId),
-          madre: Number(madreId),
-          observaciones,
-          hijos: [],
+          lote_gallinas: Number(form.lote_gallinas),
+          lote_gallos: Number(form.lote_gallos),
+          lote_pollitos: form.lote_pollitos,
+          galpon_eclosion: Number(form.galpon_eclosion),
+          observaciones: form.observaciones,
         },
       ])
-      setPadreId('')
-      setMadreId('')
-      setObservaciones('')
+      setForm({
+        lote_gallinas: '',
+        lote_gallos: '',
+        lote_pollitos: '',
+        galpon_eclosion: '',
+        observaciones: '',
+      })
       setLoading(false)
       setShowModal(false)
     }, 800)
-  }
-
-  // Renderiza árbol genealógico recursivo
-  const renderTree = (node, gen = 1) => {
-    if (!node || gen > 3) return null
-    return (
-      <div style={{ marginLeft: gen > 1 ? 24 : 0, borderLeft: gen > 1 ? '2px solid #e0e0e0' : 'none', paddingLeft: 12 }}>
-        <div>
-          <CIcon icon={cilUser} className="me-2 text-success" />
-          <strong>{node.id ? `ID: ${node.id}` : ''}</strong>
-          {node.padre && <CBadge color="primary" className="ms-2">Padre: {node.padre.codigo}</CBadge>}
-          {node.madre && <CBadge color="warning" className="ms-2">Madre: {node.madre.codigo}</CBadge>}
-          {node.observaciones && <span className="ms-2 text-muted">{node.observaciones}</span>}
-        </div>
-        <div className="d-flex">
-          {node.padre && renderTree(node.padre.sub, gen + 1)}
-          {node.madre && renderTree(node.madre.sub, gen + 1)}
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -168,39 +134,64 @@ const Genealogia = () => {
         <CCard>
           <CCardHeader>
             <CIcon icon={cilUser} className="me-2 text-success" />
-            <strong>Registrar Genealogía</strong>
+            <strong>Registrar Genealogía de Lotes</strong>
           </CCardHeader>
           <CCardBody>
             <CForm onSubmit={handleSubmit}>
-              <CFormLabel>Padre</CFormLabel>
+              <CFormLabel>Lote de Gallinas</CFormLabel>
               <CFormSelect
-                value={padreId}
-                onChange={e => setPadreId(e.target.value)}
+                name="lote_gallinas"
+                value={form.lote_gallinas}
+                onChange={handleChange}
                 required
                 className="mb-3"
               >
-                <option value="">Seleccione el padre</option>
-                {getReproductoresBySexo('M').map(r => (
-                  <option key={r.id} value={r.id}>{r.codigo}</option>
+                <option value="">Seleccione el lote de gallinas</option>
+                {lotes.filter(l => l.tipo === 'Gallinas').map(l => (
+                  <option key={l.id} value={l.id}>{l.lote} ({l.galpon})</option>
                 ))}
               </CFormSelect>
-              <CFormLabel>Madre</CFormLabel>
+              <CFormLabel>Lote de Gallos</CFormLabel>
               <CFormSelect
-                value={madreId}
-                onChange={e => setMadreId(e.target.value)}
+                name="lote_gallos"
+                value={form.lote_gallos}
+                onChange={handleChange}
                 required
                 className="mb-3"
               >
-                <option value="">Seleccione la madre</option>
-                {getReproductoresBySexo('F').map(r => (
-                  <option key={r.id} value={r.id}>{r.codigo}</option>
+                <option value="">Seleccione el lote de gallos</option>
+                {lotes.filter(l => l.tipo === 'Gallos').map(l => (
+                  <option key={l.id} value={l.id}>{l.lote} ({l.galpon})</option>
+                ))}
+              </CFormSelect>
+              <CFormLabel>Lote de Pollitos (resultado)</CFormLabel>
+              <CFormInput
+                name="lote_pollitos"
+                value={form.lote_pollitos}
+                onChange={handleChange}
+                required
+                className="mb-3"
+                placeholder="Ej: Pollitos 2024-05"
+              />
+              <CFormLabel>Galpón de Eclosión</CFormLabel>
+              <CFormSelect
+                name="galpon_eclosion"
+                value={form.galpon_eclosion}
+                onChange={handleChange}
+                required
+                className="mb-3"
+              >
+                <option value="">Seleccione galpón</option>
+                {galpones.map(g => (
+                  <option key={g.id} value={g.id}>{g.nombre}</option>
                 ))}
               </CFormSelect>
               <CFormLabel>Observaciones</CFormLabel>
               <CFormTextarea
-                value={observaciones}
-                onChange={e => setObservaciones(e.target.value)}
-                rows={4}
+                name="observaciones"
+                value={form.observaciones}
+                onChange={handleChange}
+                rows={3}
                 className="mb-3"
                 placeholder="Observaciones sobre la genealogía..."
               />
@@ -213,13 +204,13 @@ const Genealogia = () => {
         </CCard>
       </CCol>
 
-      {/* Panel derecho: Listado y árbol */}
+      {/* Panel derecho: Listado */}
       <CCol md={7}>
         <CCard>
           <CCardHeader className="d-flex align-items-center justify-content-between">
             <span>
               <CIcon icon={cilList} className="me-2 text-primary" />
-              <strong>Genealogía Registrada</strong>
+              <strong>Genealogía de Lotes Registrada</strong>
             </span>
             <CInputGroup style={{ width: 250 }}>
               <CInputGroupText>
@@ -228,7 +219,7 @@ const Genealogia = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Buscar pareja..."
+                placeholder="Buscar lote o galpón..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -238,28 +229,22 @@ const Genealogia = () => {
             {filtered.length === 0 && <div className="text-muted">No hay registros.</div>}
             {filtered.map((g, idx) => (
               <div key={g.id} className="mb-3">
-                <div
-                  className="d-flex align-items-center"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedNode(buildGenealogyTree(genealogia, reproductores, g.id))}
-                >
+                <div className="d-flex align-items-center">
                   <CIcon icon={cilChevronRight} className="me-1 text-secondary" />
-                  <span>
-                    <CBadge color="primary" className="me-1">
-                      Padre: {reproductores.find(r => r.id === g.padre)?.codigo}
-                    </CBadge>
-                    <CBadge color="warning" className="me-1">
-                      Madre: {reproductores.find(r => r.id === g.madre)?.codigo}
-                    </CBadge>
-                  </span>
-                  <CTooltip content="Ver árbol genealógico">
-                    <CIcon icon={cilChevronBottom} className="ms-2 text-info" />
-                  </CTooltip>
+                  <CBadge color="primary" className="me-1">
+                    Gallinas: {lotes.find(l => l.id === g.lote_gallinas)?.lote}
+                  </CBadge>
+                  <CBadge color="warning" className="me-1">
+                    Gallos: {lotes.find(l => l.id === g.lote_gallos)?.lote}
+                  </CBadge>
+                  <CBadge color="info" className="me-1">
+                    Pollitos: {g.lote_pollitos}
+                  </CBadge>
+                  <CBadge color="secondary" className="me-1">
+                    Eclosión: {galpones.find(ga => ga.id === g.galpon_eclosion)?.nombre}
+                  </CBadge>
+                  {g.observaciones && <span className="ms-2 text-muted">{g.observaciones}</span>}
                 </div>
-                {/* Árbol genealógico expandible */}
-                {selectedNode && selectedNode.id === g.id && (
-                  <div className="mt-2">{renderTree(selectedNode)}</div>
-                )}
               </div>
             ))}
           </CCardBody>
@@ -286,39 +271,64 @@ const Genealogia = () => {
       {/* Modal de entrada rápida */}
       <CModal visible={showModal} onClose={() => setShowModal(false)}>
         <CModalHeader>
-          <strong>Añadir rápidamente</strong>
+          <strong>Añadir Genealogía de Lotes</strong>
         </CModalHeader>
         <CModalBody>
           <CForm onSubmit={handleSubmit}>
-            <CFormLabel>Padre</CFormLabel>
+            <CFormLabel>Lote de Gallinas</CFormLabel>
             <CFormSelect
-              value={padreId}
-              onChange={e => setPadreId(e.target.value)}
+              name="lote_gallinas"
+              value={form.lote_gallinas}
+              onChange={handleChange}
               required
               className="mb-3"
             >
-              <option value="">Seleccione el padre</option>
-              {getReproductoresBySexo('M').map(r => (
-                <option key={r.id} value={r.id}>{r.codigo}</option>
+              <option value="">Seleccione el lote de gallinas</option>
+              {lotes.filter(l => l.tipo === 'Gallinas').map(l => (
+                <option key={l.id} value={l.id}>{l.lote} ({l.galpon})</option>
               ))}
             </CFormSelect>
-            <CFormLabel>Madre</CFormLabel>
+            <CFormLabel>Lote de Gallos</CFormLabel>
             <CFormSelect
-              value={madreId}
-              onChange={e => setMadreId(e.target.value)}
+              name="lote_gallos"
+              value={form.lote_gallos}
+              onChange={handleChange}
               required
               className="mb-3"
             >
-              <option value="">Seleccione la madre</option>
-              {getReproductoresBySexo('F').map(r => (
-                <option key={r.id} value={r.id}>{r.codigo}</option>
+              <option value="">Seleccione el lote de gallos</option>
+              {lotes.filter(l => l.tipo === 'Gallos').map(l => (
+                <option key={l.id} value={l.id}>{l.lote} ({l.galpon})</option>
+              ))}
+            </CFormSelect>
+            <CFormLabel>Lote de Pollitos (resultado)</CFormLabel>
+            <CFormInput
+              name="lote_pollitos"
+              value={form.lote_pollitos}
+              onChange={handleChange}
+              required
+              className="mb-3"
+              placeholder="Ej: Pollitos 2024-05"
+            />
+            <CFormLabel>Galpón de Eclosión</CFormLabel>
+            <CFormSelect
+              name="galpon_eclosion"
+              value={form.galpon_eclosion}
+              onChange={handleChange}
+              required
+              className="mb-3"
+            >
+              <option value="">Seleccione galpón</option>
+              {galpones.map(g => (
+                <option key={g.id} value={g.id}>{g.nombre}</option>
               ))}
             </CFormSelect>
             <CFormLabel>Observaciones</CFormLabel>
             <CFormTextarea
-              value={observaciones}
-              onChange={e => setObservaciones(e.target.value)}
-              rows={4}
+              name="observaciones"
+              value={form.observaciones}
+              onChange={handleChange}
+              rows={3}
               className="mb-3"
               placeholder="Observaciones sobre la genealogía..."
             />
@@ -338,4 +348,4 @@ const Genealogia = () => {
   )
 }
 
-export default Genealogia
+export default GenealogiaLotes
