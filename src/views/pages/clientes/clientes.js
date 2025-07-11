@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import {
   CCard, CCardBody, CCardHeader, CCol, CRow, CForm, CFormLabel, CFormInput,
   CButton, CFormSelect, CFormFeedback, CTable, CTableHead, CTableRow,
@@ -8,31 +8,19 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilSearch, cilPen, cilTrash, cilCloudDownload } from '@coreui/icons'
 
-// Mock de usuarios existentes
-const mockUsuarios = [
-  { id: 1, nombre: 'Administrador' },
-  { id: 2, nombre: 'Vendedor 1' },
-  { id: 3, nombre: 'Vendedor 2' },
-]
-
-// Mock de clientes
-const mockClientes = [
-  { id: 1, nombre: 'Granja El Sol', tipo: 'Mayorista', contacto: '3216549870', direccion: 'Calle 1 #23-45', id_usuario: 2 },
-  { id: 2, nombre: 'Distribuidora Norte', tipo: 'Minorista', contacto: 'ventas@norte.com', direccion: 'Av. Central 100', id_usuario: 3 },
-  { id: 3, nombre: 'Supermercado Sur', tipo: 'Supermercado', contacto: 'super.sur@email.com', direccion: 'Cra 5 #10-20', id_usuario: 1 },
-]
+const API_URL = 'http://localhost:3001'
 
 const tiposCliente = ['Mayorista', 'Minorista', 'Supermercado', 'Otro']
 
 function exportToCSV(data, usuarios) {
-  const header = ['ID', 'Nombre', 'Tipo', 'Contacto', 'Dirección', 'Usuario']
+  const header = ['ID Cliente', 'Nombre', 'Tipo', 'Contacto', 'Dirección', 'Usuario Asignado']
   const rows = data.map(row => [
-    row.id,
+    row.id_cliente,
     row.nombre,
     row.tipo,
     row.contacto,
     row.direccion,
-    usuarios.find(u => u.id === row.id_usuario)?.nombre || '',
+    usuarios.find(u => u.id_usuario === row.id_usuario)?.nombre_completo || 'N/A',
   ])
   const csvContent = [header, ...rows].map(e => e.join(',')).join('\n')
   const blob = new Blob([csvContent], { type: 'text/csv' })
@@ -52,8 +40,8 @@ function validarContacto(valor) {
 }
 
 const Clientes = () => {
-  const [clientes, setClientes] = useState(mockClientes)
-  const [usuarios] = useState(mockUsuarios)
+  const [clientes, setClientes] = useState([])
+  const [usuarios, setUsuarios] = useState([])
   const [form, setForm] = useState({
     nombre: '',
     tipo: '',
@@ -66,6 +54,24 @@ const Clientes = () => {
   const [filtroTipo, setFiltroTipo] = useState('')
   const [editId, setEditId] = useState(null)
   const [showModal, setShowModal] = useState(false)
+
+  // Cargar datos desde la API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [clientesRes, usuariosRes] = await Promise.all([
+          fetch(`${API_URL}/clientes`),
+          fetch(`${API_URL}/usuarios`),
+        ])
+        setClientes(await clientesRes.json())
+        setUsuarios(await usuariosRes.json())
+      } catch (error) {
+        console.error('Error al cargar los datos:', error)
+        setFormError('No se pudieron cargar los datos desde el servidor.')
+      }
+    }
+    fetchData()
+  }, [])
 
   // Estadísticas
   const totalClientes = clientes.length
@@ -89,7 +95,7 @@ const Clientes = () => {
     setForm({ ...form, [name]: value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setFormError('')
     if (!form.nombre || !form.tipo || !form.contacto || !form.direccion || !form.id_usuario) {
@@ -100,19 +106,32 @@ const Clientes = () => {
       setFormError('El contacto debe ser un teléfono válido o un email.')
       return
     }
+
+    const payload = {
+      ...form,
+      id_usuario: Number(form.id_usuario),
+    }
+
     if (editId) {
-      setClientes(clientes.map(item =>
-        item.id === editId ? { ...form, id: editId, id_usuario: Number(form.id_usuario) } : item
-      ))
+      const res = await fetch(`${API_URL}/clientes/${editId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, id: editId }),
+      })
+      const updated = await res.json()
+      setClientes(clientes.map(item => (item.id === editId ? updated : item)))
     } else {
-      setClientes([
-        ...clientes,
-        {
-          ...form,
-          id: clientes.length ? Math.max(...clientes.map(i => i.id)) + 1 : 1,
-          id_usuario: Number(form.id_usuario),
-        },
-      ])
+      const maxIdCliente = clientes.length > 0 ? Math.max(...clientes.map(c => c.id_cliente || 0)) : 0
+      const nextIdCliente = maxIdCliente + 1
+      const newClient = { ...payload, id_cliente: nextIdCliente }
+
+      const res = await fetch(`${API_URL}/clientes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newClient),
+      })
+      const saved = await res.json()
+      setClientes([...clientes, saved])
     }
     setForm({ nombre: '', tipo: '', contacto: '', direccion: '', id_usuario: '' })
     setEditId(null)
@@ -131,7 +150,8 @@ const Clientes = () => {
     setShowModal(true)
   }
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
+    await fetch(`${API_URL}/clientes/${id}`, { method: 'DELETE' })
     setClientes(clientes.filter(item => item.id !== id))
   }
 
@@ -224,8 +244,8 @@ const Clientes = () => {
               </CTableHead>
               <CTableBody>
                 {filtered.map(item => (
-                  <CTableRow key={item.id}>
-                    <CTableDataCell>{item.id}</CTableDataCell>
+                  <CTableRow key={item.id_cliente || item.id}>
+                    <CTableDataCell>{item.id_cliente}</CTableDataCell>
                     <CTableDataCell>{item.nombre}</CTableDataCell>
                     <CTableDataCell>
                       <CBadge color="info">{item.tipo}</CBadge>
@@ -233,7 +253,7 @@ const Clientes = () => {
                     <CTableDataCell>{item.contacto}</CTableDataCell>
                     <CTableDataCell>{item.direccion}</CTableDataCell>
                     <CTableDataCell>
-                      {usuarios.find(u => u.id === item.id_usuario)?.nombre || ''}
+                      {usuarios.find(u => u.id_usuario === item.id_usuario)?.nombre_completo || 'N/A'}
                     </CTableDataCell>
                     <CTableDataCell>
                       <CButton
@@ -316,7 +336,7 @@ const Clientes = () => {
             >
               <option value="">Seleccione usuario</option>
               {usuarios.map(u => (
-                <option key={u.id} value={u.id}>{u.nombre}</option>
+                <option key={u.id_usuario} value={u.id_usuario}>{u.nombre_completo}</option>
               ))}
             </CFormSelect>
             {formError && <CFormFeedback className="d-block mb-2">{formError}</CFormFeedback>}

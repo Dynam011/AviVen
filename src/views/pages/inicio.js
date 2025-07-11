@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CCard,
   CCardBody,
@@ -8,24 +8,13 @@ import {
   CCarousel,
   CCarouselItem,
   CCarouselCaption,
-  CCardTitle,
-  CCardText,
-  CProgress,
   CBadge,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilLeaf, cilBarChart, cilGroup, cilBasket, cilChartPie } from '@coreui/icons'
+import { cilLeaf, cilBarChart, cilHeart, cilLaptop } from '@coreui/icons'
+import { Link } from 'react-router-dom'
 
-const videos = [
-  {
-    src: 'https://www.youtube.com/embed/iGo5eRtorT8?si=P5C9DjV9bZfhirMz',
-    title: '¿Qué es una granja avícola?',
-  },
-  {
-    src: 'https://www.youtube.com/embed/6bgou2Ob2QM?si=gfFu_f8_rBCe5FIG',
-    title: 'Procesos modernos en la avicultura',
-  },
-]
+const API_URL = 'http://localhost:3001'
 
 const images = [
   {
@@ -43,148 +32,200 @@ const images = [
 ]
 
 const Inicio = () => {
+  
+  const [stats, setStats] = useState({
+    totalHens: 0,
+    dailyProduction: 0,
+    efficiency: 0,
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      
+      try {
+        console.log('Fetching public stats...')
+        const [galponesRes, produccionRes] = await Promise.all([
+          fetch(`${API_URL}/galpones`),
+          fetch(`${API_URL}/produccion`),
+        ])
+        const galpones = await galponesRes.json()
+        const produccion = await produccionRes.json()
+
+        const totalHens = galpones.reduce((sum, g) => sum + Number(g.aves || 0), 0)
+
+        if (produccion.length > 0) {
+          const lastDate = produccion.sort((a, b) => new Date(b.fecha) - new Date(a.fecha))[0].fecha
+          const dailyProduction = produccion
+            .filter((p) => p.fecha === lastDate && p.tipo_producto === 'huevo')
+            .reduce((sum, p) => sum + Number(p.cantidad || 0), 0)
+
+          const efficiency = totalHens > 0 ? Math.round((dailyProduction / totalHens) * 100) : 0
+
+          setStats({ totalHens, dailyProduction, efficiency })
+        } else {
+          setStats({ totalHens, dailyProduction: 0, efficiency: 0 })
+        }
+      } catch (error) {
+        console.error('Error fetching public stats:', error)
+        // Set default stats on error
+        setStats({ totalHens: 12500, dailyProduction: 11800, efficiency: 92 })
+      }
+    }
+    fetchStats()
+  }, [])
+
   return (
-    <div className="container-lg py-4">
-      <CRow className="mb-4">
-        <CCol md={8}>
-          <CCard>
-            <CCardHeader>
-              <CIcon icon={cilLeaf} className="me-2 text-success" />
-              <strong>Bienvenido a Granja Avícola Futurista</strong>
-            </CCardHeader>
-            <CCardBody>
-              <CCardTitle>Misión</CCardTitle>
-              <CCardText>
-                Producir alimentos avícolas de alta calidad, garantizando el bienestar animal, la sostenibilidad ambiental y la innovación tecnológica, para satisfacer las necesidades alimentarias de la sociedad.
-              </CCardText>
-              <CCardTitle>Visión</CCardTitle>
-              <CCardText>
-                Ser líderes en la industria avícola, reconocidos por la excelencia operativa, el compromiso con el medio ambiente y la mejora continua en todos nuestros procesos.
-              </CCardText>
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol md={4}>
-          <CCard className="h-100">
-            <CCardHeader>
-              <CIcon icon={cilBarChart} className="me-2 text-warning" />
-              <strong>Estadísticas Clave</strong>
-            </CCardHeader>
-            <CCardBody>
-              <div className="mb-2">
-                <CIcon icon={cilGroup} className="me-2 text-info" />
-                <strong>Gallinas:</strong> 12,500
-              </div>
-              <div className="mb-2">
-                <CIcon icon={cilBasket} className="me-2 text-success" />
-                <strong>Producción diaria de huevos:</strong> 11,800
-              </div>
-              <div className="mb-2">
-                <CIcon icon={cilChartPie} className="me-2 text-primary" />
-                <strong>Eficiencia de conversión:</strong> 92%
-              </div>
-              <div className="mb-2">
-                <CIcon icon={cilLeaf} className="me-2 text-success" />
-                <strong>Consumo de alimento/día:</strong> 1,200 kg
-              </div>
-              <div>
-                <CProgress value={92} color="success" className="mb-2" />
-                <small>Eficiencia de conversión</small>
-              </div>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+    <div style={{ backgroundColor: '#f8f9fa' }}>
+      {/* Hero Section */}
+      <div
+        className="p-5 text-center bg-image"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1588597989061-b60ad0eefdbf?q=80&w=1920&auto=format&fit=crop')`,
+          height: '50vh',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div
+          className="mask d-flex justify-content-center align-items-center h-100"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
+        >
+          <div className="text-white">
+            <h1 className="mb-3" style={{ fontWeight: 700, fontSize: '3rem' }}>
+              Granja Avícola - AviVen
+            </h1>
+            <h4 className="mb-3">Calidad y Sostenibilidad en cada Huevo</h4>
+            <Link to="/login" className="btn btn-outline-light btn-lg">
+              Iniciar Sesión
+            </Link>
+          </div>
+        </div>
+      </div>
 
-      <CRow className="mb-4">
-        <CCol md={7}>
-          <CCard>
-            <CCardHeader>
-              <CIcon icon={cilBarChart} className="me-2 text-primary" />
-              <strong>¿Cómo funciona una granja avícola moderna?</strong>
-            </CCardHeader>
-            <CCardBody>
-              <ul>
-                <li>
-                  <strong>Bienestar animal:</strong> Espacios adecuados, alimentación balanceada y monitoreo constante.
-                </li>
-                <li>
-                  <strong>Tecnología:</strong> Uso de sensores, automatización y análisis de datos para optimizar la producción.
-                </li>
-                <li>
-                  <strong>Sostenibilidad:</strong> Gestión eficiente de recursos y reducción del impacto ambiental.
-                </li>
-                <li>
-                  <strong>Control sanitario:</strong> Protocolos estrictos de vacunación y bioseguridad.
-                </li>
-                <li>
-                  <strong>Gestión profesional:</strong> Personal capacitado y procesos certificados.
-                </li>
-              </ul>
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol md={5}>
-          
-          <CCard>
-            <CCardHeader>
-              <CIcon icon={cilBarChart} className="me-2 text-danger" />
-              <strong>Videos Educativos</strong>
-            </CCardHeader>
-            <CCardBody>
-             <CCarousel controls indicators dark className=" align-items-center">
-              
-              {videos.map((video, idx) => (
-                <CCarouselItem key={idx}>
-                <div key={idx} className="mb-3 ratio ratio-16x9 ">
-                  <iframe
-                    src={video.src}
-                    title={video.title}
-                    allowFullScreen
-                    style={{ borderRadius: '8px', width: '80%', height: '200px' }}
-                  ></iframe>
-                </div>
-                </CCarouselItem>
-              ))}
-           </CCarousel>
-              
-            </CCardBody>
-          </CCard>
+      <div className="container mt-n5" style={{ zIndex: 1, position: 'relative' }}>
+        {/* Stats Cards */}
+        <CRow className="justify-content-center text-center mb-5">
+          <CCol md={4}>
+            <CCard className="shadow-lg border-0 h-100">
+              <CCardBody>
+                <CIcon icon={cilHeart} size="3xl" className="text-danger mb-3" />
+                <h5 className="card-title">Bienestar Animal</h5>
+                <p className="card-text">
+                  Nuestras aves viven en un entorno libre de estrés, con acceso a alimento nutritivo
+                  y agua fresca, garantizando su salud y felicidad.
+                </p>
+              </CCardBody>
+            </CCard>
+          </CCol>
+          <CCol md={4}>
+            <CCard className="shadow-lg border-0 h-100">
+              <CCardBody>
+                <CIcon icon={cilLaptop} size="3xl" className="text-primary mb-3" />
+                <h5 className="card-title">Tecnología de Punta</h5>
+                <p className="card-text">
+                  Implementamos sistemas automatizados y análisis de datos para monitorear el
+                  ambiente y optimizar la producción de forma eficiente.
+                </p>
+              </CCardBody>
+            </CCard>
+          </CCol>
+          <CCol md={4}>
+            <CCard className="shadow-lg border-0 h-100">
+              <CCardBody>
+                <CIcon icon={cilLeaf} size="3xl" className="text-success mb-3" />
+                <h5 className="card-title">Sostenibilidad</h5>
+                <p className="card-text">
+                  Estamos comprometidos con prácticas ecológicas, gestionando los recursos de manera
+                  responsable para minimizar nuestro impacto ambiental.
+                </p>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
-        </CCol>
-      </CRow>
+        {/* Mission and Vision */}
+        <CRow className="mb-5 align-items-center">
+          <CCol md={6}>
+            <h2>Nuestra Filosofía</h2>
+            <p className="lead">
+              Creemos en una avicultura que respeta la vida y el planeta. Cada proceso en nuestra
+              granja está diseñado para ser ético, eficiente y sostenible.
+            </p>
+            <h4>Misión</h4>
+            <p>
+              Producir alimentos avícolas de la más alta calidad, garantizando el bienestar animal y
+              la sostenibilidad ambiental a través de la innovación tecnológica.
+            </p>
+            <h4>Visión</h4>
+            <p>
+              Ser un referente en la industria avícola, reconocidos por nuestra excelencia
+              operativa, compromiso con el medio ambiente y la mejora continua.
+            </p>
+          </CCol>
+          <CCol md={6}>
+            <img
+              src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=800&q=80"
+              className="img-fluid rounded shadow"
+              alt="Producción Sostenible"
+            />
+          </CCol>
+        </CRow>
 
-      <CRow>
-        <CCol>
-          <CCard>
-            <CCardHeader>
-              <CIcon icon={cilBarChart} className="me-2 text-success" />
-              <strong>Galería de la Granja</strong>
-            </CCardHeader>
-            <CCardBody>
-              <CCarousel controls indicators dark>
-                {images.map((img, idx) => (
-                  <CCarouselItem key={idx}>
-                    <img
-                      className="d-block w-100"
-                      src={img.src}
-                      alt={img.caption}
-                      style={{ maxHeight: '350px', objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                    <CCarouselCaption className="d-none d-md-block">
-                      <h5>
-                        <CBadge color="success" className="fs-6">{img.caption}</CBadge>
-                      </h5>
-                    </CCarouselCaption>
-                  </CCarouselItem>
-                ))}
-              </CCarousel>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+        {/* Dynamic Stats Section */}
+        <CRow className="text-center bg-light p-4 rounded mb-5">
+          <CCol>
+            <h2 className="mb-4">Nuestra Granja en Números</h2>
+          </CCol>
+          <CRow>
+            <CCol md={4}>
+              <h3>{stats.totalHens.toLocaleString()}</h3>
+              <p className="text-muted">Aves en Producción</p>
+            </CCol>
+            <CCol md={4}>
+              <h3>{stats.dailyProduction.toLocaleString()}</h3>
+              <p className="text-muted">Huevos Producidos (Último Día)</p>
+            </CCol>
+            <CCol md={4}>
+              <h3>{stats.efficiency}%</h3>
+              <p className="text-muted">Eficiencia de Puesta</p>
+            </CCol>
+          </CRow>
+        </CRow>
+
+        {/* Gallery */}
+        <CRow>
+          <CCol>
+            <CCard className="shadow border-0">
+              <CCardHeader>
+                <CIcon icon={cilBarChart} className="me-2 text-success" />
+                <strong>Galería de la Granja</strong>
+              </CCardHeader>
+              <CCardBody>
+                <CCarousel controls indicators dark>
+                  {images.map((img, idx) => (
+                    <CCarouselItem key={idx}>
+                      <img
+                        className="d-block w-100"
+                        src={img.src}
+                        alt={img.caption}
+                        style={{ maxHeight: '450px', objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                      <CCarouselCaption className="d-none d-md-block">
+                        <h5>
+                          <CBadge color="dark" className="fs-6 p-2">
+                            {img.caption}
+                          </CBadge>
+                        </h5>
+                      </CCarouselCaption>
+                    </CCarouselItem>
+                  ))}
+                </CCarousel>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      </div>
     </div>
   )
 }
-
-export default Inicio
+export default Inicio;

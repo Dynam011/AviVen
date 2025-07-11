@@ -4,28 +4,40 @@ import {
   CTableHead, CTableHeaderCell, CTableRow, CWidgetStatsA, CBadge
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilLeaf, cilBasket, cilBarChart, cilStorage, cilBell
-} from '@coreui/icons'
+import { cilLeaf, cilBarChart, cilStorage, cilBell, cilUser } from '@coreui/icons'
 
 const API_URL = 'http://localhost:3001'
 
 const Dashboard = () => {
   const [insumos, setInsumos] = useState([])
   const [galpones, setGalpones] = useState([])
-  const [gallos, setGallos] = useState([])
-  const [personal, setPersonal] = useState([])
+  const [ventas, setVentas] = useState([])
+  const [clientes, setClientes] = useState([])
 
   useEffect(() => {
-    fetch(`${API_URL}/insumos`).then(res => res.json()).then(setInsumos)
-    fetch(`${API_URL}/galpones`).then(res => res.json()).then(setGalpones)
-    fetch(`${API_URL}/gallos`).then(res => res.json()).then(setGallos)
-    fetch(`${API_URL}/personal`).then(res => res.json()).then(setPersonal).catch(() => setPersonal([]))
+    const fetchData = async () => {
+      try {
+        const [insumosRes, galponesRes, ventasRes, clientesRes] = await Promise.all([
+          fetch(`${API_URL}/insumos`),
+          fetch(`${API_URL}/galpones`),
+          fetch(`${API_URL}/ventas`),
+          fetch(`${API_URL}/clientes`),
+        ])
+        setInsumos(await insumosRes.json())
+        setGalpones(await galponesRes.json())
+        setVentas(await ventasRes.json())
+        setClientes(await clientesRes.json())
+      } catch (error) {
+        console.error('Error al cargar los datos del dashboard:', error)
+      }
+    }
+    fetchData()
   }, [])
 
   // Estadísticas generales
   const totalHens = galpones.reduce((sum, g) => sum + (g.aves || 0), 0)
-  const totalGallos = gallos.reduce((sum, g) => sum + (g.cantidad || 0), 0)
+  const totalIngresos = ventas.reduce((sum, v) => sum + (v.total || 0), 0)
+  const totalClientes = clientes.length
 
   // Stock de alimento
   const feedStock = insumos.find(i => i.nombre?.toLowerCase().includes('alimento'))?.stock_actual || 0
@@ -33,14 +45,13 @@ const Dashboard = () => {
   // Alertas
   const desinfectante = insumos.find(i => i.nombre?.toLowerCase().includes('desinfectante'))
   const vacunas = insumos.find(i => i.nombre?.toLowerCase().includes('vacuna'))
-  const alerts = [
-    desinfectante && desinfectante.stock_actual < 20
-      ? { type: 'Crítico', msg: 'Stock de desinfectante bajo. ¡Reponer urgente!', color: 'danger' }
-      : null,
-    vacunas && vacunas.stock_actual < 50
-      ? { type: 'Advertencia', msg: 'Vacunas en nivel bajo. Programar compra.', color: 'warning' }
-      : null,
-  ].filter(Boolean)
+  const alerts = []
+  if (desinfectante && desinfectante.stock_actual < 20) {
+    alerts.push({ type: 'Crítico', msg: 'Stock de desinfectante bajo. ¡Reponer urgente!', color: 'danger' })
+  }
+  if (vacunas && vacunas.stock_actual < 50) {
+    alerts.push({ type: 'Advertencia', msg: 'Vacunas en nivel bajo. Programar compra.', color: 'warning' })
+  }
 
   // Inventario y suministros
   const inventoryTable = insumos.map(i => ({
@@ -53,12 +64,8 @@ const Dashboard = () => {
       : 'Crítico'
   }))
 
-  // Personal y turnos (si existe en db.json)
-  const staff = Array.isArray(personal) && personal.length > 0
-    ? personal
-    : [
-      { nombre: 'No registrado', rol: '-', turno: '-', estado: '-' }
-    ]
+  // Últimas ventas
+  const ultimasVentas = [...ventas].sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).slice(0, 5)
 
   return (
     <>
@@ -68,7 +75,7 @@ const Dashboard = () => {
           <CWidgetStatsA
             className="mb-4 h-100"
             color="success"
-            value={totalHens}
+            value={totalHens.toLocaleString()}
             title="Gallinas en Producción"
             style={{ background: 'linear-gradient(135deg,rgb(77, 189, 114) 0%,rgb(41, 158, 137) 100%)', color: '#222' }}
             chart={
@@ -82,8 +89,8 @@ const Dashboard = () => {
           <CWidgetStatsA
             className="mb-4 h-100"
             color="primary"
-            value={totalGallos}
-            title="Gallos Registrados"
+            value={`$${totalIngresos.toLocaleString()}`}
+            title="Ingresos por Ventas"
             style={{ background: 'linear-gradient(135deg, #36d1c4 0%, #5b86e5 100%)', color: '#fff' }}
             chart={
               <div className="d-flex justify-content-center align-items-center" style={{ height: 48 }}>
@@ -110,12 +117,12 @@ const Dashboard = () => {
           <CWidgetStatsA
             className="mb-4 h-100"
             color="warning"
-            value={insumos.length}
-            title="Tipos de Insumos"
+            value={totalClientes}
+            title="Clientes Activos"
             style={{ background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)', color: '#222' }}
             chart={
               <div className="d-flex justify-content-center align-items-center" style={{ height: 48 }}>
-                <CIcon icon={cilBasket} size="xl" style={{ color: '#b8860b', maxWidth: 40, maxHeight: 40 }} />
+                <CIcon icon={cilUser} size="xl" style={{ color: '#b8860b', maxWidth: 40, maxHeight: 40 }} />
               </div>
             }
           />
@@ -161,30 +168,30 @@ const Dashboard = () => {
         </CCardBody>
       </CCard>
 
-      {/* Personal y turnos */}
+      {/* Últimas Ventas */}
       <CCard className="mb-4">
         <CCardHeader>
-          <h4>Personal y Turnos</h4>
+          <h4>Últimas Ventas Registradas</h4>
         </CCardHeader>
         <CCardBody>
           <CTable align="middle" className="mb-0 border" hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell>Nombre</CTableHeaderCell>
-                <CTableHeaderCell>Rol</CTableHeaderCell>
-                <CTableHeaderCell>Turno</CTableHeaderCell>
-                <CTableHeaderCell>Estado</CTableHeaderCell>
+                <CTableHeaderCell>Cliente</CTableHeaderCell>
+                <CTableHeaderCell>Insumo</CTableHeaderCell>
+                <CTableHeaderCell>Fecha</CTableHeaderCell>
+                <CTableHeaderCell>Total</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {staff.map((person, index) => (
-                <CTableRow key={index}>
-                  <CTableDataCell>{person.nombre}</CTableDataCell>
-                  <CTableDataCell>{person.rol}</CTableDataCell>
-                  <CTableDataCell>{person.turno}</CTableDataCell>
+              {ultimasVentas.map((venta) => (
+                <CTableRow key={venta.id_venta}>
+                  <CTableDataCell>{clientes.find(c => c.id_cliente === venta.id_cliente)?.nombre || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{insumos.find(i => i.id_insumo === venta.id_insumo)?.nombre || 'N/A'}</CTableDataCell>
+                  <CTableDataCell>{venta.fecha}</CTableDataCell>
                   <CTableDataCell>
-                    <CBadge color={person.estado === 'Activo' ? 'success' : 'danger'}>
-                      {person.estado}
+                    <CBadge color="success">
+                      ${Number(venta.total).toLocaleString()}
                     </CBadge>
                   </CTableDataCell>
                 </CTableRow>
@@ -215,7 +222,7 @@ const Dashboard = () => {
               ))}
             </ul>
           ) : (
-            <span className="text-success">Sin alertas activas.</span>
+            <span className="text-success">¡Todo en orden! No hay alertas activas.</span>
           )}
         </CCardBody>
       </CCard>
