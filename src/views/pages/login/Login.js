@@ -187,7 +187,7 @@ const Login = () => {
                     <br />
                     Regístrate para llevar el control de tu granja avícola.
                   </p>
-                  <a href="/register">
+                  <a href="/#/register">
                     <CButton
                       color="light"
                       className="mt-3"
