@@ -16,6 +16,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+import logo from '../../../assets/images/logo.webp'
 
 const API_URL = 'http://localhost:3001'
 
@@ -89,7 +90,7 @@ const Login = () => {
                 <CCardBody>
                   <div className="text-center mb-4">
                     <img
-                      src="src\assets\images\logo.webp"
+                      src={logo}
                       alt="Logo granja"
                       style={{ width: 60, marginBottom: 10 }}
                     />
@@ -170,7 +171,7 @@ const Login = () => {
               >
                 <CCardBody className="text-center d-flex flex-column align-items-center justify-content-center h-100">
                   <img
-                    src="src\assets\images\logo.webp"
+                    src={logo}
                     alt="Gallina"
                     style={{
                       width: 80,

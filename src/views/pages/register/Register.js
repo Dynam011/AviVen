@@ -14,6 +14,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+import logo from '../../../assets/images/logo.webp'
 
 const API_URL = 'http://localhost:3001'
 
@@ -134,7 +135,7 @@ const Register = () => {
               <CCardBody className="p-5">
                 <div className="text-center mb-4">
                   <img
-                    src="src/assets/images/logo.webp"
+                    src={logo}
                     alt="Logo granja"
                     style={{ width: 70, marginBottom: 12, borderRadius: '50%', boxShadow: '0 2px 8px #b2dfdb' }}
                   />
